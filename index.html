@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23ffc766'/%3E%3Cstop offset='1' stop-color='%23ff8a00'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='40' height='40' rx='11.500' fill='url(%23g)'/%3E%3Cg transform='scale(.625)'%3E%3Cpath d='M14.5 35v11.5c0 3.6 7.6 6.5 17.5 6.5s17.5-2.9 17.5-6.5V35z' fill='white' fill-opacity='.85'/%3E%3Cellipse cx='32' cy='35' rx='17.5' ry='6.2' fill='white'/%3E%3Cpath d='M14 9L36 31M50 9L28 31' stroke='white' stroke-width='3.4' stroke-linecap='round' fill='none'/%3E%3C/g%3E%3C/svg%3E">
-<title>Drum Reader</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23ffc766'/%3E%3Cstop offset='1' stop-color='%23ff8a00'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='40' height='40' rx='11.500' fill='url(%23g)'/%3E%3Cg transform='scale(.625)'%3E%3Cpath d='M10 24h44M10 30h44M10 36h44M10 42h44M10 48h44' stroke='white' stroke-opacity='.55' stroke-width='1.8' stroke-linecap='round' fill='none'/%3E%3Cpath d='M24.2 40V22M38.2 34V16' stroke='white' stroke-width='2.2' fill='none'/%3E%3Cpath d='M23.2 21.2L39.2 15.2V19L23.2 25Z' fill='white'/%3E%3Cellipse cx='20' cy='41' rx='4.8' ry='3.5' transform='rotate(-22 20 41)' fill='white'/%3E%3Cellipse cx='34' cy='35' rx='4.8' ry='3.5' transform='rotate(-22 34 35)' fill='white'/%3E%3Cpath d='M47 14V52' stroke='white' stroke-width='3' stroke-linecap='round' fill='none'/%3E%3C/g%3E%3C/svg%3E">
+<title>Notenfluss</title>
 <style>
 :root{--bg:#e8e6e1;--surface:#ffffff;--soft:#f3f1ec;--text:#17181b;--muted:#6c6f78;--accent:#f08c00;--ink:#1b1200;--line:#dcd9d0;--shadow:0 10px 40px rgba(20,20,30,.16);
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -282,13 +282,28 @@ body.lib #wrap,body.lib .dock{display:none}
 :root[data-theme="dark"] #accbox .gbtn{background:#131314;color:#e3e3e3;border-color:#8e918f}
 #accbox .or{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12px;margin:2px 0 12px}
 #accbox .or::before,#accbox .or::after{content:"";flex:1;height:1px;background:var(--line)}
+.brand .wm span{margin-left:0}
+#layoutbox{position:fixed;inset:0;z-index:106;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.45);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+#layoutbox[hidden]{display:none}
+#layoutbox .card{width:min(540px,100%);background:var(--glass2);-webkit-backdrop-filter:blur(30px) saturate(180%);backdrop-filter:blur(30px) saturate(180%);border:1px solid var(--gb);border-radius:36px;box-shadow:var(--hi),var(--shadow);padding:28px 22px 22px;text-align:center}
+#layoutbox h2{margin:0 0 6px;font-size:22px;letter-spacing:-.02em}
+#layoutbox p{margin:0 0 18px;color:var(--muted);font-size:14px}
+.lopts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:480px){.lopts{grid-template-columns:1fr}}
+.lopt{display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 14px;height:auto;border-radius:26px;background:var(--soft);border:2px solid transparent;text-align:center;cursor:pointer;font:inherit;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+.lopt.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,var(--soft))}
+.lopt svg{width:96px;height:62px;stroke:var(--muted);fill:none}
+.lopt.on svg{stroke:var(--accent);color:var(--accent)}
+.lopt svg{color:var(--muted)}
+.lopt b{font-size:15px;font-weight:700}
+.lopt small{color:var(--muted);font-size:12px;line-height:1.35;white-space:normal;font-weight:400}
 </style>
 </head>
 <body>
 <header class="top">
   <div class="brand">
-    <svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lgA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffcb73"/><stop offset="1" stop-color="#ff8600"/></linearGradient><linearGradient id="lgB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".85"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient><linearGradient id="lgC" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".6"/><stop offset=".3" stop-color="#fff" stop-opacity=".98"/><stop offset=".62" stop-color="#fff" stop-opacity=".88"/><stop offset="1" stop-color="#fff" stop-opacity=".5"/></linearGradient><linearGradient id="lgD" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#ffecd0"/></linearGradient></defs><rect width="64" height="64" rx="18" fill="url(#lgA)"/><rect x=".6" y=".6" width="62.8" height="62.8" rx="17.4" fill="none" stroke="url(#lgB)" stroke-width="1.2"/><path d="M4.5 24C4.5 12 12 5 32 5s27.5 7 27.5 19C46 16.5 18 16.5 4.5 24Z" fill="#fff" fill-opacity=".18" stroke="none"/><ellipse cx="32" cy="55.5" rx="15" ry="2" fill="#b85a00" fill-opacity=".18" stroke="none"/><path d="M14.5 35v11.5c0 3.6 7.6 6.5 17.5 6.5s17.5-2.9 17.5-6.5V35z" fill="url(#lgC)" stroke="none"/><path d="M20 41.5v5.5M26 42.8v5.5M32 43.2v6M38 42.8v5.5M44 41.5v5.5" fill="none" stroke="#d97706" stroke-opacity=".42" stroke-width="1.7" stroke-linecap="round"/><ellipse cx="32" cy="35" rx="17.5" ry="6.2" fill="#fff" stroke="none"/><ellipse cx="32" cy="35" rx="15" ry="5" fill="url(#lgD)" stroke="#d97706" stroke-opacity=".3" stroke-width="1"/><path d="M51.2 10.2L48.8 7.8L27.36 30.36L28.64 31.64Z" fill="#fff" stroke="#d97706" stroke-opacity=".4" stroke-width="1" stroke-linejoin="round"/><circle cx="50" cy="9" r="1.9" fill="#fff" stroke="#d97706" stroke-opacity=".4" stroke-width="1"/><circle cx="28" cy="31" r="1.5" fill="#fff" stroke="#d97706" stroke-opacity=".4" stroke-width=".8"/><path d="M12.8 10.2L15.2 7.8L36.64 30.36L35.36 31.64Z" fill="none" stroke="#ffa42a" stroke-width="3.4" stroke-linejoin="round"/><path d="M12.8 10.2L15.2 7.8L36.64 30.36L35.36 31.64Z" fill="#fff" stroke="#d97706" stroke-opacity=".4" stroke-width="1" stroke-linejoin="round"/><circle cx="14" cy="9" r="1.9" fill="#fff" stroke="#d97706" stroke-opacity=".4" stroke-width="1"/><circle cx="36" cy="31" r="1.5" fill="#fff" stroke="#d97706" stroke-opacity=".4" stroke-width=".8"/></svg>
-    <div class="wm"><b>Drum</b><span>Reader</span></div>
+    <svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lgA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffcb73"/><stop offset="1" stop-color="#ff8600"/></linearGradient><linearGradient id="lgB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".85"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><rect width="64" height="64" rx="18" fill="url(#lgA)"/><rect x=".6" y=".6" width="62.8" height="62.8" rx="17.4" fill="none" stroke="url(#lgB)" stroke-width="1.2"/><path d="M4.5 24C4.5 12 12 5 32 5s27.5 7 27.5 19C46 16.5 18 16.5 4.5 24Z" fill="#fff" fill-opacity=".18" stroke="none"/><path d="M10 24h44M10 30h44M10 36h44M10 42h44M10 48h44" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1.6" stroke-linecap="round"/><path d="M24.2 40V22M38.2 34V16" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M23.2 21.2L39.2 15.2V19L23.2 25Z" fill="#fff" stroke="none"/><ellipse cx="20" cy="41" rx="4.8" ry="3.5" transform="rotate(-22 20 41)" fill="#fff" stroke="none"/><ellipse cx="34" cy="35" rx="4.8" ry="3.5" transform="rotate(-22 34 35)" fill="#fff" stroke="none"/><path d="M47 14V52" fill="none" stroke="#fff" stroke-opacity=".28" stroke-width="7" stroke-linecap="round"/><path d="M47 14V52" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>
+    <div class="wm"><b>Noten</b><span>fluss</span></div>
   </div>
   <div id="fname"></div><div class="sp"></div>
   <button id="open">PDF öffnen</button>
@@ -353,6 +368,7 @@ body.lib #wrap,body.lib .dock{display:none}
   </div>
   <div class="grp"><h3>Erkennung</h3>
     <label class="fld"><b>Empfindlichkeit <em id="sensV"></em></b><input id="sens" type="range" min="25" max="75"><small>Erkennt zu wenig? Höher stellen. Erkennt Unsinn? Niedriger. Die Takte einer Zeile lassen sich außerdem direkt an der Zeile mit − / + korrigieren.</small></label>
+    <label class="fld"><b>Notenaufbau</b><select id="staves"><option value="1">Eine Zeile pro System (z. B. Schlagzeug, Gesang)</option><option value="2">Zwei Zeilen: linke &amp; rechte Hand (z. B. Klavier)</option></select></label>
     <label class="fld"><b>Takte pro Zeile (falls nicht erkannt)</b><input id="mpl" type="number" min="1" max="16"></label>
   </div>
   <div class="grp"><h3>Üben &amp; Klick</h3>
@@ -410,6 +426,16 @@ body.lib #wrap,body.lib .dock{display:none}
     <button id="accCfgReset" class="link" type="button" hidden>Firebase-Konfiguration ändern</button>
   </div>
 </div>
+<div id="layoutbox" hidden>
+  <div class="card">
+    <h2>Wie sind deine Noten aufgebaut?</h2>
+    <p>Das bestimmt, wie Zeilen und Takte erkannt werden. Du kannst es später in den Einstellungen ändern.</p>
+    <div class="lopts">
+      <button class="lopt" data-st="1" type="button"><svg viewBox="0 0 84 54"><path d="M4 12h76M4 20h76M4 28h76M4 36h76M4 44h76" stroke-width="1.5"/><ellipse cx="32" cy="32" rx="6" ry="4.4" transform="rotate(-20 32 32)" fill="currentColor" stroke="none"/><path d="M37.6 30V8" stroke-width="2"/><ellipse cx="54" cy="24" rx="6" ry="4.4" transform="rotate(-20 54 24)" fill="currentColor" stroke="none"/><path d="M59.6 22V4" stroke-width="2"/></svg><b>Eine Zeile</b><small>Pro System eine Notenzeile, z. B. Schlagzeug, Gesang, Gitarre, Melodie</small></button>
+      <button class="lopt" data-st="2" type="button"><svg viewBox="0 0 84 54"><path d="M12 4h68M12 10h68M12 16h68M12 22h68M12 32h68M12 38h68M12 44h68M12 50h68" stroke-width="1.4"/><path d="M8 4Q2 27 8 50" stroke-width="2"/><path d="M12 4v46" stroke-width="1.6"/><ellipse cx="40" cy="14" rx="5" ry="3.6" transform="rotate(-20 40 14)" fill="currentColor" stroke="none"/><ellipse cx="58" cy="40" rx="5" ry="3.6" transform="rotate(-20 58 40)" fill="currentColor" stroke="none"/></svg><b>Linke &amp; rechte Hand</b><small>Zwei Notenzeilen pro System, z. B. Klavier, Keyboard, Orgel</small></button>
+    </div>
+  </div>
+</div>
 <div id="legalbox" hidden>
   <div class="card">
     <button id="legalx" class="ico x" aria-label="Schließen"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
@@ -421,7 +447,7 @@ body.lib #wrap,body.lib .dock{display:none}
 <h3>1. Verantwortlicher</h3>
 <p><span class="ph">[Vor- und Nachname]</span>, <span class="ph">[Straße und Hausnummer]</span>, <span class="ph">[PLZ Ort]</span>, E-Mail: <span class="ph">[E-Mail-Adresse]</span> (siehe auch Impressum).</p>
 <h3>2. Überblick</h3>
-<p>Drum Reader ist ein Noten-Player im Browser. Deine PDF-Dateien werden ausschließlich lokal in deinem Browser verarbeitet und nicht auf einen Server hochgeladen. Ein Konto ist optional und nur für die Funktion „Meine Songs“ nötig. Es werden keine Werbe-, Tracking- oder Analysedienste eingesetzt.</p>
+<p>Notenfluss ist ein Noten-Player im Browser. Deine PDF-Dateien werden ausschließlich lokal in deinem Browser verarbeitet und nicht auf einen Server hochgeladen. Ein Konto ist optional und nur für die Funktion „Meine Songs“ nötig. Es werden keine Werbe-, Tracking- oder Analysedienste eingesetzt.</p>
 <h3>3. Hosting und Server-Logfiles</h3>
 <p>Beim Aufruf der Seite verarbeitet der Hosting-Anbieter (<span class="ph">[Hosting-Anbieter eintragen, z. B. GitHub Pages oder Firebase Hosting]</span>) technisch notwendige Daten wie IP-Adresse, Datum und Uhrzeit, aufgerufene Seite und Browserinformationen in Server-Logfiles. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (sicherer und stabiler Betrieb der Seite).</p>
 <h3>4. Externe Bibliotheken (cdnjs / Cloudflare)</h3>
@@ -461,7 +487,7 @@ body.lib #wrap,body.lib .dock{display:none}
 <h2>Nutzungsbedingungen</h2>
 <p class="muted">Stand: 22.11.2026 · Version 2026-11-22</p>
 <h3>1. Leistung</h3>
-<p>Drum Reader ist ein kostenloser Noten-Player im Browser mit automatischem Scrollen, Metronom und optionalem Konto. Ein Anspruch auf bestimmte Funktionen oder dauerhafte Verfügbarkeit besteht nicht.</p>
+<p>Notenfluss ist ein kostenloser Noten-Player im Browser mit automatischem Scrollen, Metronom und optionalem Konto. Ein Anspruch auf bestimmte Funktionen oder dauerhafte Verfügbarkeit besteht nicht.</p>
 <h3>2. Konto</h3>
 <p>Du musst mindestens 16 Jahre alt sein oder die Zustimmung deiner Erziehungsberechtigten haben. Deine Angaben müssen wahr sein, deine Zugangsdaten hältst du geheim. Du bist für Aktivitäten in deinem Konto verantwortlich.</p>
 <h3>3. Deine Inhalte und Urheberrecht</h3>
@@ -514,7 +540,7 @@ const mod = (a, n) => ((a % n) + n) % n;
 const ease = t => t * t * (3 - 2 * t);
 const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
 
-const S = { bpm: 100, bpb: 4, mpl: 4, count: false, metro: false, loop: 0, ramp: 0, maxbpm: 200, vol: 1, sub: 1, stage: false, slide: 0.9, zoom: 100, sens: 45, theme: 'auto' };
+const S = { bpm: 100, bpb: 4, mpl: 4, count: false, metro: false, loop: 0, ramp: 0, maxbpm: 200, vol: 1, sub: 1, stage: false, slide: 0.9, staves: 1, zoom: 100, sens: 45, theme: 'auto' };
 try { Object.assign(S, JSON.parse(localStorage.getItem('drumreader4') || '{}')); } catch (e) {}
 const save = () => { try { localStorage.setItem('drumreader4', JSON.stringify(S)); } catch (e) {} };
 
@@ -541,7 +567,7 @@ async function analyze(P) {
 
 const mk = ls => ({ ls, top: ls[0], bot: ls[ls.length - 1], n: ls.length });
 
-function detect(D, sens) {
+function detect(D, sens, grp) {
   const { w, h, d } = D, row = new Float32Array(h);
   let mx = 0;
   for (let y = 0; y < h; y++) { let c = 0; const o = y * w; for (let x = 0; x < w; x++) c += d[o + x]; row[y] = c / w; if (row[y] > mx) mx = row[y]; }
@@ -567,30 +593,37 @@ function detect(D, sens) {
   };
   let st = split.filter(valid).map(mk);
   if (!st.length) st = split.filter(ls => ls.length <= 2).map(mk);
-  return st.map((q, k) => {
-    const pv = st[k - 1], nx = st[k + 1];
-    const y0 = Math.max(q.top - s * 2.8, pv ? (pv.bot + q.top) / 2 : 0);
-    const y1 = Math.min(q.bot + s * 2.2, nx ? (q.bot + nx.top) / 2 : h);
+  /* Ein System = eine Notenzeile (Schlagzeug, Gesang, ...) oder zwei (linke und rechte Hand) */
+  const units = [];
+  if (grp === 2 && st.length > 1) { for (let i = 0; i < st.length; i += 2) units.push(st[i + 1] ? [st[i], st[i + 1]] : [st[i]]); }
+  else st.forEach(q => units.push([q]));
+  /* Taktstriche: volle Höhe, aber ohne Fortsetzung darüber/darunter (Notenhälse ausschließen) */
+  const findBars = (xl, xr, yt, yb) => {
+    const H = yb - yt + 1, out = [];
+    const a0 = Math.max(0, Math.round(yt - s * .9)), a1 = Math.max(0, Math.round(yt - s * .4));
+    const b0 = Math.min(h - 1, Math.round(yb + s * .4)), b1 = Math.min(h - 1, Math.round(yb + s * .9));
+    const frac = (x, ya, yb2) => { let n = 0; for (let y = ya; y <= yb2; y++) n += d[y * w + x]; return yb2 >= ya ? n / (yb2 - ya + 1) : 0; };
+    const groups = []; let g = null;
+    for (let x = xl; x <= xr; x++) {
+      let n = 0; for (let y = yt; y <= yb; y++) n += d[y * w + x];
+      if (n >= H * .9 && frac(x, a0, a1) < .5 && frac(x, b0, b1) < .5) { if (g && x - g.e <= s * 1.2) g.e = x; else { if (g) groups.push(g); g = { a: x, e: x }; } }
+    }
+    if (g) groups.push(g);
+    groups.forEach(q2 => { const c = (q2.a + q2.e) / 2; if (!out.length || c - out[out.length - 1] >= s * 5) out.push(c); });
+    return out;
+  };
+  return units.map((u, k) => {
+    const q = u[0], qb = u[u.length - 1], pv = units[k - 1], nx = units[k + 1];
+    const y0 = Math.max(q.top - s * 2.8, pv ? (pv[pv.length - 1].bot + q.top) / 2 : 0);
+    const y1 = Math.min(qb.bot + s * 2.2, nx ? (qb.bot + nx[0].top) / 2 : h);
     const yr = Math.round(q.top);
     const col = x => d[yr * w + x] || d[(yr - 1) * w + x] || d[(yr + 1) * w + x];
     let xl = 0, xr = w - 1;
     for (; xl < w - 20; xl++) { let n = 0; for (let j = 0; j < 16; j++) n += col(xl + j); if (n >= 14) break; }
     for (; xr > xl + 20; xr--) { let n = 0; for (let j = 0; j < 16; j++) n += col(xr - j); if (n >= 14) break; }
-    /* Taktstriche: volle Notensystem-Höhe, aber ohne Fortsetzung darüber/darunter (Notenhälse ausschließen) */
-    const bars = [];
-    if (q.n >= 3) {
-      const yt = Math.round(q.top), yb = Math.round(q.bot), H = yb - yt + 1;
-      const a0 = Math.max(0, Math.round(yt - s * .9)), a1 = Math.max(0, Math.round(yt - s * .4));
-      const b0 = Math.min(h - 1, Math.round(yb + s * .4)), b1 = Math.min(h - 1, Math.round(yb + s * .9));
-      const frac = (x, ya, yb2) => { let n = 0; for (let y = ya; y <= yb2; y++) n += d[y * w + x]; return yb2 >= ya ? n / (yb2 - ya + 1) : 0; };
-      const groups = []; let g = null;
-      for (let x = xl; x <= xr; x++) {
-        let n = 0; for (let y = yt; y <= yb; y++) n += d[y * w + x];
-        if (n >= H * .9 && frac(x, a0, a1) < .5 && frac(x, b0, b1) < .5) { if (g && x - g.e <= s * 1.2) g.e = x; else { if (g) groups.push(g); g = { a: x, e: x }; } }
-      }
-      if (g) groups.push(g);
-      groups.forEach(q2 => { const c = (q2.a + q2.e) / 2; if (!bars.length || c - bars[bars.length - 1] >= s * 5) bars.push(c); });
-    }
+    let bars = [];
+    if (u.length === 2) { bars = findBars(xl, xr, Math.round(q.top), Math.round(qb.bot)); if (bars.length < 2) bars = findBars(xl, xr, Math.round(q.top), Math.round(q.bot)); }
+    else if (q.n >= 3) bars = findBars(xl, xr, Math.round(q.top), Math.round(q.bot));
     const bd = [...bars];
     if (!bd.length || bd[0] - xl > s * 3.5) bd.unshift(xl);
     if (xr - bd[bd.length - 1] > s * 3.5) bd.push(xr);
@@ -602,7 +635,7 @@ function detect(D, sens) {
 function buildSystems() {
   sheet.querySelectorAll('.sys').forEach(e => e.remove());
   systems = [];
-  pages.forEach((P, pi) => detect(P.dark, S.sens / 100).forEach(s => {
+  pages.forEach((P, pi) => detect(P.dark, S.sens / 100, S.staves).forEach(s => {
     s.page = pi; s.measures = s.auto ? s.det : S.mpl;
     s.el = document.createElement('div'); s.el.className = 'sys';
     s.el.innerHTML = '<div class="bdg"><button data-d="-1" aria-label="Einen Takt weniger">−</button><span></span><button data-d="1" aria-label="Einen Takt mehr">+</button></div>';
@@ -801,6 +834,9 @@ async function loadFile(f) {
     $('stat').textContent = 'Seiten werden geladen …';
     await render();
     for (let i = 0; i < pages.length; i++) { $('stat').textContent = 'Erkenne Notenzeilen … Seite ' + (i + 1) + ' von ' + pages.length; await analyze(pages[i]); }
+    let stv = pendingStaves; pendingStaves = null;
+    if (!stv) stv = await askLayout();
+    S.staves = stv; save(); $('staves').value = stv;
     buildSystems(); recalc(false); layout(); window.scrollTo(0, 0); startFrom(0, 0); await restoreSong();
     const n = systems.reduce((a, s) => a + s.measures, 0), au = systems.filter(s => s.auto).length;
     if (systems.length) toast(systems.length + ' Zeilen · ' + n + ' Takte erkannt (' + au + ' Zeilen mit Taktstrichen). Bitte kurz prüfen: Falsche Taktzahl lässt sich mit − / + korrigieren.');
@@ -1134,7 +1170,7 @@ const FB_ERR = {
   'auth/configuration-not-found': 'Firebase Authentication ist in deinem Projekt noch nicht eingerichtet. Öffne die Firebase-Konsole → Authentication → „Los geht’s“ und aktiviere unter „Anmeldemethode“ E-Mail/Passwort.',
   'auth/account-exists-with-different-credential': 'Zu dieser E-Mail-Adresse gibt es bereits ein Konto mit einer anderen Anmeldemethode. Melde dich mit E-Mail und Passwort an.',
   'auth/popup-blocked': 'Das Anmeldefenster wurde vom Browser blockiert. Bitte erlaube Pop-ups für diese Seite.',
-  'auth/unauthorized-domain': 'Diese Domain ist in Firebase nicht als autorisierte Domain eingetragen.',
+  'auth/unauthorized-domain': 'Die Domain „' + (location.hostname || 'lokale Datei (file://)') + '“ ist in Firebase nicht als autorisierte Domain eingetragen. Trage sie unter Authentication → Einstellungen → Autorisierte Domains ein.',
   'auth/network-request-failed': 'Keine Verbindung zu Firebase. Hinweis: In der gehosteten Vorschau auf claude.ai sind Verbindungen zu Firebase blockiert. Lade die Datei herunter und hoste sie selbst (z. B. Firebase Hosting).'
 };
 const fbMsg = e => FB_ERR[e && e.code] || (e && e.message) || 'Unbekannter Fehler.';
@@ -1227,7 +1263,7 @@ async function saveSong(first) {
   try {
     if (!curSongId) curSongId = await pdfId(curBytes);
     const FV = firebase.firestore.FieldValue;
-    const data = { name: curName, pages: pages.length, lines: systems.length, bars: systems.reduce((a, s) => a + s.measures, 0), bpm: S.bpm, bpb: S.bpb, measures: systems.map(s => s.measures), startSys, startMeasure, lastPlayed: FV.serverTimestamp() };
+    const data = { name: curName, pages: pages.length, lines: systems.length, bars: systems.reduce((a, s) => a + s.measures, 0), bpm: S.bpm, bpb: S.bpb, measures: systems.map(s => s.measures), staves: S.staves, startSys, startMeasure, lastPlayed: FV.serverTimestamp() };
     if (first) { data.plays = FV.increment(1); const th = makeThumb(); if (th) data.thumb = th; }
     await col.doc(curSongId).set(data, { merge: true });
     if (first) idbPut(fbUser.uid + '_' + curSongId, curBytes).catch(() => {});
@@ -1284,7 +1320,8 @@ async function loadSongsOld() {
     });
   } catch (e) { L.innerHTML = ''; const m = document.createElement('div'); m.className = 'empty err'; m.textContent = songErr(e); L.appendChild(m); }
 }
-async function openSong(id, name, here) {
+async function openSong(id, name, here, staves) {
+  pendingStaves = staves || null;
   closeSongs();
   if (here) {
     try { const bytes = await idbGet(fbUser.uid + '_' + id); if (bytes) { loadFile(new File([bytes], (name || 'Song') + '.pdf', { type: 'application/pdf' })); return; } } catch (e) {}
@@ -1379,7 +1416,7 @@ function songCard(s) {
   d2.textContent = [(s.bpm || '–') + ' BPM', s.bars ? s.bars + ' Takte' : null, (s.plays || 1) + '× gespielt'].filter(Boolean).join(' · ');
   sb.append(nm, d1, d2);
   const sr = mkEl('div', 'sr'), op = mkEl('button', 'op'); op.textContent = s.here ? 'Öffnen' : 'Datei wählen';
-  op.onclick = e => { e.stopPropagation(); openSong(s.id, s.name, s.here); };
+  op.onclick = e => { e.stopPropagation(); openSong(s.id, s.name, s.here, s.staves); };
   const rm = mkEl('button', 'ico rm'); rm.innerHTML = TRASH; rm.title = 'Zweimal tippen zum Löschen'; rm.setAttribute('aria-label', 'Löschen');
   let armed = false;
   rm.onclick = async e => {
@@ -1387,7 +1424,7 @@ function songCard(s) {
     if (!armed) { armed = true; rm.classList.add('arm'); setTimeout(() => { armed = false; rm.classList.remove('arm'); }, 2500); return; }
     try { await songsCol().doc(s.id).delete(); idbDel(fbUser.uid + '_' + s.id).catch(() => {}); libItems = libItems.filter(x => x.id !== s.id); renderLib(); } catch (err) { toast(songErr(err)); }
   };
-  sr.append(op, rm); c.append(pv, sb, sr); c.onclick = () => openSong(s.id, s.name, s.here);
+  sr.append(op, rm); c.append(pv, sb, sr); c.onclick = () => openSong(s.id, s.name, s.here, s.staves);
   return c;
 }
 $('libSearch').oninput = e => { libQuery = e.target.value.trim().toLowerCase(); renderLib(); };
@@ -1440,7 +1477,7 @@ $('accExport').onclick = async () => {
     if (c) out.zustimmung = { version: c.version, zeitpunkt: c.acceptedAt && c.acceptedAt.toDate ? c.acceptedAt.toDate().toISOString() : null };
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' }));
-    a.download = 'drum-reader-daten.json'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+    a.download = 'notenfluss-daten.json'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
   } catch (e) { toast(songErr(e)); }
 };
 let delArmed = false;
@@ -1456,6 +1493,21 @@ $('accDelete').onclick = async () => {
     await u.delete(); closeAcc(); toast('Dein Konto und alle Daten wurden gelöscht.');
   } catch (e) { toast(e && e.code === 'auth/requires-recent-login' ? 'Bitte melde dich zur Sicherheit erneut an und versuche das Löschen noch einmal.' : fbMsg(e)); }
 };
+/* ===== Notenaufbau: eine Zeile oder linke & rechte Hand ===== */
+var pendingStaves = null;
+function askLayout() {
+  return new Promise(res => {
+    const box = $('layoutbox'); box.hidden = false;
+    box.querySelectorAll('[data-st]').forEach(b => {
+      b.classList.toggle('on', +b.dataset.st === S.staves);
+      b.onclick = () => { box.hidden = true; res(+b.dataset.st); };
+    });
+  });
+}
+$('staves').value = S.staves;
+$('staves').onchange = () => { S.staves = +$('staves').value; save(); redetect(); };
+addEventListener('keydown', e => { if (!$('layoutbox').hidden) e.stopPropagation(); }, true);
+
 /* ===== Anmeldung mit Google ===== */
 $('accGoogle').onclick = async () => {
   if (!fbAuth) return;
