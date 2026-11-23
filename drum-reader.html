@@ -1,0 +1,1488 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23ffc766'/%3E%3Cstop offset='1' stop-color='%23ff8a00'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='40' height='40' rx='11.500' fill='url(%23g)'/%3E%3Cg transform='scale(.625)'%3E%3Cpath d='M14.5 35v11.5c0 3.6 7.6 6.5 17.5 6.5s17.5-2.9 17.5-6.5V35z' fill='white' fill-opacity='.85'/%3E%3Cellipse cx='32' cy='35' rx='17.5' ry='6.2' fill='white'/%3E%3Cpath d='M14 9L36 31M50 9L28 31' stroke='white' stroke-width='3.4' stroke-linecap='round' fill='none'/%3E%3C/g%3E%3C/svg%3E">
+<title>Drum Reader</title>
+<style>
+:root{--bg:#e8e6e1;--surface:#ffffff;--soft:#f3f1ec;--text:#17181b;--muted:#6c6f78;--accent:#f08c00;--ink:#1b1200;--line:#dcd9d0;--shadow:0 10px 40px rgba(20,20,30,.16);
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d0e11;--surface:#1a1c21;--soft:#23262c;--text:#eeeef1;--muted:#9a9da8;--accent:#ffb020;--line:#2e3138;--shadow:0 10px 40px rgba(0,0,0,.55)}}
+:root[data-theme="dark"]{--bg:#0d0e11;--surface:#1a1c21;--soft:#23262c;--text:#eeeef1;--muted:#9a9da8;--accent:#ffb020;--line:#2e3138;--shadow:0 10px 40px rgba(0,0,0,.55)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 "Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--surface);z-index:60}
+button{font:inherit;color:var(--text);cursor:pointer;border:1px solid var(--line);background:var(--surface);border-radius:12px;min-height:42px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:transform .1s,background .15s,border-color .15s}
+button:hover{border-color:var(--muted)}button:active{transform:scale(.95)}
+button.ico{width:42px;padding:0}
+svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;display:flex;align-items:center;gap:12px;padding:10px 16px;background:color-mix(in srgb,var(--surface) 86%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:11px;min-width:0}
+.brand svg{width:34px;height:34px;stroke:none}
+.brand b{display:block;font-size:16px;letter-spacing:-.01em;line-height:1.1}
+.brand span{display:block;font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+#fname{flex:1;min-width:0;text-align:center;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top .sp{flex:1}
+#open{background:var(--text);color:var(--surface);border-color:var(--text);font-weight:600}
+#wrap{padding:13vh 10px 75vh}
+#sheet{position:relative;margin:0 auto;cursor:pointer;user-select:none;-webkit-user-select:none}
+#sheet canvas{display:block;background:#fff;margin:0 0 16px;border-radius:4px;box-shadow:var(--shadow)}
+.sys{position:absolute;z-index:4;pointer-events:none;border-radius:8px;mix-blend-mode:multiply;transition:background .3s}
+.sys.past{background:rgba(70,78,100,.2)}
+.sys.active{background:rgba(255,190,20,.3)}
+.sys.active::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:4px;background:#e07a00}
+.bl{position:absolute;top:0;bottom:0;width:1px;background:rgba(200,110,0,.55);display:none}
+.bn{position:absolute;top:2px;font:700 9px/1 system-ui;color:#b45309;display:none}
+body:not(.playing) .bl,body:not(.playing) .bn{display:block}
+.bdg{position:absolute;right:4px;bottom:3px;display:flex;align-items:center;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:999px;padding:2px;font-size:11px;font-weight:600;pointer-events:auto;box-shadow:0 2px 8px rgba(0,0,0,.18);mix-blend-mode:normal}
+.bdg button{border:0;background:none;width:26px;height:26px;min-height:0;padding:0;border-radius:50%;font-size:15px}
+.bdg span{padding:0 4px;white-space:nowrap}
+body.playing .bdg{display:none}
+#mark{position:absolute;z-index:5;width:0;border-left:3px solid #12a150;pointer-events:none;display:none}
+#mark::before{content:"START";position:absolute;left:3px;top:-15px;background:#12a150;color:#fff;font:700 9px/15px system-ui;letter-spacing:.08em;padding:0 6px;border-radius:5px}
+#ph{position:absolute;z-index:6;left:0;width:3px;margin-left:-1px;background:var(--accent);box-shadow:0 0 12px var(--accent);border-radius:3px;pointer-events:none;display:none}
+#empty{max-width:520px;margin:5vh auto 0;text-align:center;padding:40px 28px;background:var(--surface);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);color:var(--muted)}
+#empty h1{margin:18px 0 8px;font-size:26px;letter-spacing:-.02em;color:var(--text)}
+#empty .staff{width:140px;height:60px;stroke:var(--line);stroke-width:2}
+#empty ul{list-style:none;margin:22px 0 26px;padding:0;display:grid;gap:10px;text-align:left;font-size:14px}
+#empty li{display:flex;gap:10px;align-items:flex-start}#empty li i{flex:none;width:20px;height:20px;border-radius:50%;background:var(--accent);color:var(--ink);font:700 12px/20px system-ui;text-align:center}
+body.drag #empty{border-color:var(--accent)}
+.dock{position:fixed;z-index:45;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom,0px));width:min(760px,calc(100% - 20px));background:color-mix(in srgb,var(--surface) 90%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);padding:12px 16px 12px}
+.meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;margin-bottom:7px}
+.track{height:4px;border-radius:4px;background:var(--line);overflow:hidden;margin-bottom:12px}
+#prog{display:block;height:100%;width:0;background:var(--accent)}
+.row{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;justify-content:space-between}
+.trans{display:flex;align-items:center;gap:10px}
+#play{width:68px;height:52px;border-radius:26px;background:var(--accent);border-color:var(--accent);color:var(--ink)}
+#play svg{width:26px;height:26px;fill:currentColor;stroke:none}
+.tempo{display:flex;align-items:center;gap:6px}
+.tempo label{text-align:center;min-width:64px}
+#bpm{width:64px;border:0;background:none;color:var(--text);font-family:inherit;font-weight:700;font-size:28px;line-height:1;text-align:center;padding:0;font-variant-numeric:tabular-nums}
+.tempo small{display:block;color:var(--muted);font-size:10px;letter-spacing:.12em;margin-top:2px}
+.tools{display:flex;gap:8px}
+#metro.on{background:var(--accent);border-color:var(--accent);color:var(--ink)}
+#bpmR{width:100%;margin:12px 0 0;display:block}
+input[type=range]{accent-color:var(--accent);height:24px}
+@media (max-width:640px){.trans{order:-1;flex:1 1 100%;justify-content:center}.row{justify-content:space-between}}
+#veil{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .25s}
+#drawer{position:fixed;z-index:71;top:0;right:0;bottom:0;width:min(380px,100%);background:var(--surface);border-left:1px solid var(--line);box-shadow:var(--shadow);transform:translateX(105%);transition:transform .28s ease;padding:calc(18px + env(safe-area-inset-top,0px)) 20px 28px;overflow:auto}
+body.dopen #drawer{transform:none}body.dopen #veil{opacity:1;pointer-events:auto}
+#drawer h2{margin:0;font-size:18px}
+.hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.grp{padding:16px 0;border-top:1px solid var(--line);display:grid;gap:14px}
+.grp:first-of-type{border:0}
+.grp h3{margin:0;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.fld{display:grid;gap:6px;font-size:14px}.fld b{display:flex;justify-content:space-between;font-weight:600}.fld b em{font-style:normal;color:var(--muted);font-weight:500}
+.fld small{color:var(--muted);font-size:12px;line-height:1.4}
+select,input[type=number]{font:inherit;color:var(--text);background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:10px}
+.seg{display:grid;grid-auto-flow:column;gap:4px;background:var(--soft);padding:4px;border-radius:12px}
+.seg button{border:0;background:none;min-height:36px;border-radius:9px;font-size:13px}.seg button.on{background:var(--surface);box-shadow:0 1px 4px rgba(0,0,0,.2);font-weight:600}
+.sw{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:600;cursor:pointer}
+.sw input{appearance:none;width:46px;height:28px;border-radius:14px;background:var(--line);position:relative;cursor:pointer;transition:background .2s;margin:0}
+.sw input::after{content:"";position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.sw input:checked{background:var(--accent)}.sw input:checked::after{transform:translateX(18px)}
+#toast{position:fixed;z-index:80;left:50%;bottom:calc(190px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#1c1d21;color:#fff;padding:10px 16px;border-radius:14px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .25s;max-width:92vw;text-align:center}
+#toast.show{opacity:.96}
+#tapstart{background:var(--accent);border-color:var(--accent);color:var(--ink);font-weight:700}
+#tapbox{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:16px}
+#tapbox[hidden]{display:none}
+#tapbox .card{width:min(460px,100%);background:var(--surface);border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);padding:24px;text-align:center}
+#tapbox h2{margin:0 0 6px;font-size:20px}
+#tapbox p{margin:0 0 18px;color:var(--muted);font-size:14px}
+#pad{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;height:190px;touch-action:manipulation;user-select:none;-webkit-user-select:none;cursor:pointer}
+#pad b{display:flex;align-items:center;justify-content:center;font-size:42px;background:var(--soft);border:2px solid var(--line);border-radius:18px;color:var(--muted);transition:background .08s,transform .08s}
+#pad b.on{background:var(--accent);border-color:var(--accent);color:var(--ink);transform:scale(.96)}
+#tapbpm{font-weight:700;font-size:30px;line-height:1;margin:18px 0 14px;font-variant-numeric:tabular-nums}
+/* ===== iOS 26 / Liquid Glass ===== */
+:root{--bg:#eceff6;--surface:#fff;--soft:rgba(120,120,128,.12);--text:#101114;--muted:#6b6e79;--accent:#ff9500;--ink:#2a1700;--line:rgba(60,60,67,.14);--glass:rgba(255,255,255,.6);--glass2:rgba(255,255,255,.7);--gb:rgba(255,255,255,.8);--hi:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(0,0,0,.04);--shadow:0 14px 44px rgba(30,40,90,.16),0 2px 8px rgba(30,40,90,.06)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#06070a;--surface:#1d1e24;--soft:rgba(235,235,245,.1);--text:#f5f5f7;--muted:#a2a3ad;--accent:#ff9f0a;--ink:#2a1700;--line:rgba(255,255,255,.1);--glass:rgba(48,50,60,.5);--glass2:rgba(30,32,40,.62);--gb:rgba(255,255,255,.15);--hi:inset 0 1px 0 rgba(255,255,255,.2),inset 0 -1px 0 rgba(0,0,0,.35);--shadow:0 18px 56px rgba(0,0,0,.65),0 2px 10px rgba(0,0,0,.4)}}
+:root[data-theme="dark"]{--bg:#06070a;--surface:#1d1e24;--soft:rgba(235,235,245,.1);--text:#f5f5f7;--muted:#a2a3ad;--accent:#ff9f0a;--ink:#2a1700;--line:rgba(255,255,255,.1);--glass:rgba(48,50,60,.5);--glass2:rgba(30,32,40,.62);--gb:rgba(255,255,255,.15);--hi:inset 0 1px 0 rgba(255,255,255,.2),inset 0 -1px 0 rgba(0,0,0,.35);--shadow:0 18px 56px rgba(0,0,0,.65),0 2px 10px rgba(0,0,0,.4)}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Inter',system-ui,sans-serif;letter-spacing:-.011em}
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(60% 40% at 12% 0%,rgba(255,149,0,.30),transparent 62%),radial-gradient(50% 40% at 100% 28%,rgba(94,92,230,.24),transparent 62%),radial-gradient(60% 50% at 25% 100%,rgba(10,132,255,.22),transparent 62%)}
+body::before{background:color-mix(in srgb,var(--bg) 55%,transparent);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px)}
+.top,.dock,#drawer,#empty,#tapbox .card{background:var(--glass2);-webkit-backdrop-filter:blur(30px) saturate(180%);backdrop-filter:blur(30px) saturate(180%);border:1px solid var(--gb);box-shadow:var(--hi),var(--shadow)}
+.top{top:calc(env(safe-area-inset-top,0px) + 8px);margin:8px 10px 0;border-radius:30px;padding:8px 10px 8px 14px}
+.brand b{font-weight:700}
+#fname{flex:0 1 auto;max-width:34vw;background:var(--soft);border-radius:999px;padding:5px 12px;font-size:12px}
+#fname:empty{display:none}
+button{background:var(--glass);border:1px solid var(--gb);box-shadow:var(--hi);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-radius:999px;font-weight:600;transition:transform .3s cubic-bezier(.34,1.56,.64,1),background .2s}
+button:hover{border-color:var(--gb);background:var(--glass2)}
+button:active{transform:scale(.92)}
+button.ico{border-radius:50%}
+.dock button,.top button{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--soft);border-color:transparent;box-shadow:none}
+#open{background:var(--text);color:var(--surface);border-color:transparent}
+#play,#tapstart,#metro.on,#open2{background:linear-gradient(180deg,#ffb84d,var(--accent));border:0;color:var(--ink);box-shadow:0 6px 20px rgba(255,149,0,.42),inset 0 1px 0 rgba(255,255,255,.55)}
+#play{width:74px;height:56px;border-radius:28px}
+#open2{border-radius:999px}
+.dock{border-radius:36px;padding:14px 18px 16px;width:min(720px,calc(100% - 20px))}
+.track{height:5px;background:var(--soft);margin-bottom:14px}
+#prog{background:linear-gradient(90deg,#ffb84d,var(--accent));border-radius:5px}
+#bpm{font-weight:700;font-size:34px;letter-spacing:-.03em}
+.tempo label{min-width:84px}
+input[type=range]{-webkit-appearance:none;appearance:none;background:transparent;height:28px}
+input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:var(--soft)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:#fff;margin-top:-10px;box-shadow:0 2px 8px rgba(0,0,0,.35),0 0 0 .5px rgba(0,0,0,.12)}
+input[type=range]::-moz-range-track{height:6px;border-radius:3px;background:var(--soft)}
+input[type=range]::-moz-range-thumb{width:26px;height:26px;border:0;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+#sheet canvas{border-radius:14px;box-shadow:0 18px 50px rgba(20,30,60,.24),0 2px 6px rgba(0,0,0,.08)}
+.sys{border-radius:12px}
+.bdg{background:var(--glass2);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid var(--gb)}
+#empty{border-radius:36px}
+#empty li i{background:linear-gradient(180deg,#ffb84d,var(--accent))}
+#drawer{top:calc(10px + env(safe-area-inset-top,0px));right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));width:min(390px,calc(100% - 20px));border-radius:34px;padding:20px 20px 24px}
+#veil{background:rgba(0,0,0,.3);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+select,input[type=number]{border-radius:14px;border:1px solid var(--gb);background:var(--soft)}
+.seg{border-radius:999px;padding:3px}
+.seg button{border-radius:999px;border:0;background:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+.seg button.on{background:var(--surface);box-shadow:0 2px 8px rgba(0,0,0,.2)}
+#tapbox{background:rgba(0,0,0,.4)}
+#tapbox .card{border-radius:38px}
+#pad b{border-radius:26px;background:var(--soft);border:1px solid var(--gb);box-shadow:var(--hi);font-weight:700}
+#pad b.on{background:linear-gradient(180deg,#ffb84d,var(--accent));border-color:transparent;box-shadow:0 8px 24px rgba(255,149,0,.45)}
+#toast{background:var(--glass2);color:var(--text);border:1px solid var(--gb);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);box-shadow:var(--hi),var(--shadow);border-radius:22px}
+#wrap{padding:9vh 10px 60vh}
+body.loaded #wrap{padding-top:46vh}
+.sys.past{background:rgba(70,78,100,.07)}
+.sys.inloop::after{content:"";position:absolute;right:0;top:0;bottom:0;width:4px;border-radius:4px;background:#0a84ff}
+#loop.on{background:linear-gradient(180deg,#5eb4ff,#0a84ff);color:#fff;border:0;box-shadow:0 6px 18px rgba(10,132,255,.4),inset 0 1px 0 rgba(255,255,255,.5)}
+.tools{flex-wrap:wrap;justify-content:center}
+#beats{display:flex;justify-content:center;align-items:center;gap:12px;height:14px;margin:0 0 10px}
+#beats i{width:10px;height:10px;border-radius:50%;background:var(--soft);transition:transform .12s,background .12s,box-shadow .12s}
+#beats i.on{background:var(--accent);transform:scale(1.55);box-shadow:0 0 12px var(--accent)}
+#beats i:first-child.on{background:#ff453a;box-shadow:0 0 12px #ff453a}
+body.stage .brand,body.stage #fname,body.stage #open,body.stage .top .sp{display:none}
+body.stage .top{width:max-content;margin-left:auto;padding:6px;border-radius:999px;opacity:.55}
+/* Performance: während der Wiedergabe keine teuren Unschärfe-Effekte, kein Blend-Modus */
+.sys{mix-blend-mode:normal}
+.sys.active{background:rgba(255,184,0,.22)}
+#sheet canvas{box-shadow:0 8px 28px rgba(20,30,60,.2)}
+body::after{transform:translateZ(0)}
+#ph,#mark{will-change:transform}
+body.playing .top,body.playing .dock{-webkit-backdrop-filter:none;backdrop-filter:none;background:color-mix(in srgb,var(--surface) 94%,transparent)}
+body.playing::before{-webkit-backdrop-filter:none;backdrop-filter:none}
+#sheet{will-change:transform}
+html{overscroll-behavior:none}
+#acc.in{background:linear-gradient(180deg,#ffb84d,var(--accent));color:var(--ink);font-weight:700;font-size:16px;box-shadow:0 4px 14px rgba(255,149,0,.4)}
+body.stage #acc{display:none}
+#accbox{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.4);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:16px}
+#accbox[hidden]{display:none}
+#accbox .card{position:relative;width:min(420px,100%);max-height:92vh;overflow:auto;background:var(--glass2);-webkit-backdrop-filter:blur(30px) saturate(180%);backdrop-filter:blur(30px) saturate(180%);border:1px solid var(--gb);border-radius:38px;box-shadow:var(--hi),var(--shadow);padding:28px 24px 20px}
+#accbox h2{margin:0 0 4px;font-size:22px;letter-spacing:-.02em}
+#accbox p{margin:0 0 16px;color:var(--muted);font-size:14px}
+#accbox .x{position:absolute;top:14px;right:14px;width:36px;min-height:36px;height:36px}
+#accbox input,#accbox textarea{width:100%;font:inherit;color:var(--text);background:var(--soft);border:1px solid var(--gb);border-radius:16px;padding:14px 16px;outline:none;margin:0 0 10px;display:block}
+#accbox input[hidden]{display:none}
+#accbox input:focus,#accbox textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,149,0,.25)}
+#accbox textarea{font-family:ui-monospace,Menlo,monospace;font-size:12px;resize:vertical}
+#accTabs{margin:6px 0 16px}
+#accbox .err{color:#ff453a;font-size:13px;min-height:18px;margin:2px 2px 10px}
+#accbox .go{width:100%;height:50px;border-radius:999px;background:linear-gradient(180deg,#ffb84d,var(--accent));border:0;color:var(--ink);font-weight:700;font-size:16px;box-shadow:0 6px 20px rgba(255,149,0,.42),inset 0 1px 0 rgba(255,255,255,.55)}
+#accbox .go:disabled{opacity:.6}
+#accbox .link{width:100%;min-height:38px;margin-top:6px;background:none;border:0;box-shadow:none;color:var(--muted);font-weight:500;font-size:13px}
+#accbox .avatar{width:76px;height:76px;border-radius:50%;margin:6px auto 14px;background:linear-gradient(180deg,#ffb84d,var(--accent));display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;color:var(--ink);box-shadow:0 8px 24px rgba(255,149,0,.4)}
+body.stage #songsBtn{display:none}
+@media (max-width:560px){#songsBtn span{display:none}#songsBtn{width:42px;padding:0}}
+#songbox{position:fixed;inset:0;z-index:94;background:rgba(0,0,0,.4);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:16px}
+#songbox[hidden]{display:none}
+#songbox .card{position:relative;width:min(520px,100%);max-height:86vh;display:flex;flex-direction:column;background:var(--glass2);-webkit-backdrop-filter:blur(30px) saturate(180%);backdrop-filter:blur(30px) saturate(180%);border:1px solid var(--gb);border-radius:38px;box-shadow:var(--hi),var(--shadow);padding:26px 22px 18px}
+#songbox h2{margin:0 0 4px;font-size:22px;letter-spacing:-.02em}
+#songbox p{margin:0 0 14px;color:var(--muted);font-size:14px}
+#songbox .x{position:absolute;top:14px;right:14px;width:36px;min-height:36px;height:36px}
+#songList{overflow:auto;display:grid;gap:8px;padding:2px}
+.song{display:flex;align-items:center;gap:10px;background:var(--soft);border:1px solid var(--gb);border-radius:22px;padding:10px 10px 10px 16px}
+.song .si{flex:1;min-width:0}
+.song .si b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.song .si small{display:block;color:var(--muted);font-size:12px;line-height:1.35}
+.song .op{background:linear-gradient(180deg,#ffb84d,var(--accent));border:0;color:var(--ink);font-weight:700;min-height:38px;padding:0 14px;box-shadow:0 4px 14px rgba(255,149,0,.35),inset 0 1px 0 rgba(255,255,255,.5)}
+.song .rm{width:38px;min-height:38px;height:38px;background:transparent;border-color:transparent;box-shadow:none}
+.song .rm.arm{background:#ff453a;color:#fff}
+#songList .empty{padding:26px 8px;text-align:center;color:var(--muted);font-size:14px}
+#songList .empty.err{color:#ff453a}
+#songsView{display:none;max-width:1100px;margin:0 auto;padding:22px 16px 80px}
+body.lib #songsView{display:block}
+body.lib #wrap,body.lib .dock{display:none}
+#songsBtn.on{background:linear-gradient(180deg,#ffb84d,var(--accent));color:var(--ink);box-shadow:0 4px 14px rgba(255,149,0,.4)}
+.lib-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:8px 0 20px}
+.lib-head h1{margin:0;font-size:40px;line-height:1.05;letter-spacing:-.035em}
+.lib-head p{margin:6px 0 0;color:var(--muted)}
+.lib-tools{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}
+.lib-tools[hidden]{display:none}
+#libSearch{flex:1 1 220px;font:inherit;color:var(--text);background:var(--glass2);border:1px solid var(--gb);border-radius:999px;padding:12px 18px;outline:none;box-shadow:var(--hi)}
+#libSearch:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,149,0,.25)}
+#libSort{min-width:280px}
+#libGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr));gap:18px}
+.sc{position:relative;display:flex;flex-direction:column;background:var(--glass2);border:1px solid var(--gb);border-radius:30px;box-shadow:var(--hi),var(--shadow);overflow:hidden;cursor:pointer;transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+.sc:hover{transform:translateY(-4px)}
+.sc:active{transform:scale(.98)}
+.sc .pv{position:relative;aspect-ratio:4/3;background:#fff;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.sc .pv img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.sc .pv::after{content:"";position:absolute;inset:auto 0 0 0;height:38%;background:linear-gradient(transparent,rgba(0,0,0,.2));pointer-events:none}
+.sc .pv svg{width:54px;height:54px;stroke:#c3c3c8}
+.sc .star{position:absolute;top:10px;right:10px;z-index:2;width:36px;min-height:36px;height:36px;font-size:18px;background:rgba(255,255,255,.8);color:#8e8e93;border-color:transparent;box-shadow:none}
+.sc .star.on{color:#ff9500}
+.sc .tag{position:absolute;left:10px;bottom:10px;z-index:2;font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.88);color:#1c1c1e}
+.sc .tag.ok{background:#30d158;color:#04210d}
+.sc .sb{padding:12px 16px 4px}
+.sc .sb b{display:block;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sc .sb small{display:block;color:var(--muted);font-size:12px;line-height:1.45;margin-top:2px}
+.sc .sr{display:flex;gap:8px;padding:10px 12px 14px}
+.sc .sr .op,.libmsg .op{flex:1;background:linear-gradient(180deg,#ffb84d,var(--accent));border:0;color:var(--ink);font-weight:700;min-height:42px;padding:0 18px;box-shadow:0 4px 14px rgba(255,149,0,.35),inset 0 1px 0 rgba(255,255,255,.5)}
+.sc .sr .rm{width:42px;min-height:42px;height:42px;background:var(--soft);border-color:transparent;box-shadow:none}
+.sc .sr .rm.arm{background:#ff453a;color:#fff}
+.sc.add{border-style:dashed;align-items:center;justify-content:center;min-height:250px;gap:4px;text-align:center;padding:20px}
+.sc.add .plus{font-size:52px;line-height:1;color:var(--accent);font-weight:300}
+.sc.add b{display:block}.sc.add small{display:block;color:var(--muted)}
+.libmsg{grid-column:1/-1;text-align:center;padding:48px 16px;color:var(--muted)}
+.libmsg .op{flex:none;margin-top:16px}
+@media (max-width:560px){.lib-head h1{font-size:32px}.lib-head button{display:none}#libGrid{grid-template-columns:repeat(2,1fr);gap:12px}.sc .pv{aspect-ratio:1/1}}
+.legal-links{display:flex;flex-wrap:wrap;gap:6px 16px}
+.legal-links a{color:var(--muted);font-size:12.5px;text-decoration:underline;text-underline-offset:3px}
+.legal-links a:hover{color:var(--text)}
+.legal-links.v{flex-direction:column;gap:10px}.legal-links.v a{font-size:14px}
+#accbox .note{font-size:12px;margin:0 0 10px}
+#accbox .note a,.consent a{color:var(--accent);text-decoration:underline}
+.consent{display:flex;align-items:flex-start;font-size:13px;line-height:1.4;color:var(--text);margin:4px 0 12px;cursor:pointer}
+.consent[hidden]{display:none}
+#accbox input[type=checkbox],#consentbox input[type=checkbox]{width:20px;height:20px;padding:0;margin:1px 10px 0 0;display:inline-block;flex:none;accent-color:var(--accent)}
+#accbox .link.danger{color:#ff453a}
+#legalbox,#consentbox{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.45);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+#legalbox{z-index:110}#consentbox{z-index:105}
+#legalbox[hidden],#consentbox[hidden]{display:none}
+#legalbox .card,#consentbox .card{position:relative;background:var(--glass2);-webkit-backdrop-filter:blur(30px) saturate(180%);backdrop-filter:blur(30px) saturate(180%);border:1px solid var(--gb);border-radius:36px;box-shadow:var(--hi),var(--shadow)}
+#legalbox .card{width:min(780px,100%);height:min(88vh,900px);display:flex;flex-direction:column;padding:22px 22px 12px}
+#legalbox .x{position:absolute;top:16px;right:16px;width:36px;min-height:36px;height:36px;z-index:2}
+#legalTabs{margin:0 48px 14px 0}
+#legalBody{overflow:auto;padding:4px 8px 24px 2px;line-height:1.55;font-size:14.5px}
+#legalBody h2{margin:0 0 4px;font-size:26px;letter-spacing:-.03em}
+#legalBody h3{margin:20px 0 4px;font-size:15px}
+#legalBody p{margin:0 0 8px}
+#legalBody .muted{color:var(--muted);font-size:12.5px}
+#legalBody article[hidden]{display:none}
+.ph{background:rgba(255,204,0,.35);border-radius:5px;padding:0 4px}
+#consentbox .card{width:min(440px,100%);padding:28px 24px 20px}
+#consentbox h2{margin:0 0 6px;font-size:22px;letter-spacing:-.02em}
+#consentbox p{margin:0 0 14px;color:var(--muted);font-size:14px}
+#consentbox .err{color:#ff453a;font-size:13px;min-height:18px;margin:2px 2px 10px}
+#consentbox .go{width:100%;height:50px;border-radius:999px;background:linear-gradient(180deg,#ffb84d,var(--accent));border:0;color:var(--ink);font-weight:700;font-size:16px;box-shadow:0 6px 20px rgba(255,149,0,.42),inset 0 1px 0 rgba(255,255,255,.55)}
+#consentbox .link{width:100%;min-height:38px;margin-top:6px;background:none;border:0;box-shadow:none;color:var(--muted);font-weight:500;font-size:13px}
+.brand{gap:10px}
+.brand .logo{width:38px;height:38px;flex:none;filter:drop-shadow(0 4px 10px rgba(255,138,0,.38));transition:transform .45s cubic-bezier(.34,1.56,.64,1)}
+.brand:hover .logo{transform:scale(1.07) rotate(-5deg)}
+.brand .wm{font-size:18px;line-height:1;letter-spacing:-.03em;white-space:nowrap}
+.brand .wm b{display:inline;font-size:inherit;font-weight:700;line-height:1}
+.brand .wm span{display:inline;margin-left:.28em;font-size:inherit;font-weight:500;letter-spacing:inherit;text-transform:none;color:var(--muted)}
+@media (max-width:480px){.brand .wm{display:none}}
+.brand .logo{width:42px;height:42px}
+#accbox .gbtn{width:100%;height:50px;border-radius:999px;margin:0 0 12px;display:flex;align-items:center;justify-content:center;gap:12px;background:#fff;color:#1f1f1f;border:1px solid #dadce0;font-weight:600;font-size:15px;box-shadow:0 1px 3px rgba(0,0,0,.12);-webkit-backdrop-filter:none;backdrop-filter:none}
+#accbox .gbtn svg{width:20px;height:20px;stroke:none;flex:none}
+#accbox .gbtn:disabled{opacity:.6}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #accbox .gbtn{background:#131314;color:#e3e3e3;border-color:#8e918f}}
+:root[data-theme="dark"] #accbox .gbtn{background:#131314;color:#e3e3e3;border-color:#8e918f}
+#accbox .or{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12px;margin:2px 0 12px}
+#accbox .or::before,#accbox .or::after{content:"";flex:1;height:1px;background:var(--line)}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lgA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffcb73"/><stop offset="1" stop-color="#ff8600"/></linearGradient><linearGradient id="lgB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".85"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient><linearGradient id="lgC" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".6"/><stop offset=".3" stop-color="#fff" stop-opacity=".98"/><stop offset=".62" stop-color="#fff" stop-opacity=".88"/><stop offset="1" stop-color="#fff" stop-opacity=".5"/></linearGradient><linearGradient id="lgD" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#ffecd0"/></linearGradient></defs><rect width="64" height="64" rx="18" fill="url(#lgA)"/><rect x=".6" y=".6" width="62.8" height="62.8" rx="17.4" fill="none" stroke="url(#lgB)" stroke-width="1.2"/><path d="M4.5 24C4.5 12 12 5 32 5s27.5 7 27.5 19C46 16.5 18 16.5 4.5 24Z" fill="#fff" fill-opacity=".18" stroke="none"/><ellipse cx="32" cy="55.5" rx="15" ry="2" fill="#b85a00" fill-opacity=".18" stroke="none"/><path d="M14.5 35v11.5c0 3.6 7.6 6.5 17.5 6.5s17.5-2.9 17.5-6.5V35z" fill="url(#lgC)" stroke="none"/><path d="M20 41.5v5.5M26 42.8v5.5M32 43.2v6M38 42.8v5.5M44 41.5v5.5" fill="none" stroke="#d97706" stroke-opacity=".42" stroke-width="1.7" stroke-linecap="round"/><ellipse cx="32" cy="35" rx="17.5" ry="6.2" fill="#fff" stroke="none"/><ellipse cx="32" cy="35" rx="15" ry="5" fill="url(#lgD)" stroke="#d97706" stroke-opacity=".3" stroke-width="1"/><path d="M51.2 10.2L48.8 7.8L27.36 30.36L28.64 31.64Z" fill="#fff" stroke="#d97706" stroke-opacity=".4" stroke-width="1" stroke-linejoin="round"/><circle cx="50" cy="9" r="1.9" fill="#fff" stroke="#d97706" stroke-opacity=".4" stroke-width="1"/><circle cx="28" cy="31" r="1.5" fill="#fff" stroke="#d97706" stroke-opacity=".4" stroke-width=".8"/><path d="M12.8 10.2L15.2 7.8L36.64 30.36L35.36 31.64Z" fill="none" stroke="#ffa42a" stroke-width="3.4" stroke-linejoin="round"/><path d="M12.8 10.2L15.2 7.8L36.64 30.36L35.36 31.64Z" fill="#fff" stroke="#d97706" stroke-opacity=".4" stroke-width="1" stroke-linejoin="round"/><circle cx="14" cy="9" r="1.9" fill="#fff" stroke="#d97706" stroke-opacity=".4" stroke-width="1"/><circle cx="36" cy="31" r="1.5" fill="#fff" stroke="#d97706" stroke-opacity=".4" stroke-width=".8"/></svg>
+    <div class="wm"><b>Drum</b><span>Reader</span></div>
+  </div>
+  <div id="fname"></div><div class="sp"></div>
+  <button id="open">PDF öffnen</button>
+  <button id="acc" class="ico" aria-label="Account" title="Account"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></button>
+  <button id="songsBtn" aria-label="Meine Songs" title="Meine Songs"><svg viewBox="0 0 24 24"><path d="M9 18V6l11-2v12"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg><span>Meine Songs</span></button>
+  <button id="cfg" class="ico" aria-label="Einstellungen"><svg viewBox="0 0 24 24"><path d="M4 7h9M19 7h1M4 17h1M11 17h9"/><circle cx="16" cy="7" r="2.5"/><circle cx="8" cy="17" r="2.5"/></svg></button>
+  <input id="file" type="file" accept="application/pdf" hidden>
+</header>
+
+<main id="wrap">
+  <section id="empty">
+    <svg class="staff" viewBox="0 0 140 60"><path d="M4 12h132M4 24h132M4 36h132M4 48h132"/><ellipse cx="60" cy="36" rx="9" ry="6.5" fill="var(--accent)" stroke="none"/><path d="M68 36V8" stroke="var(--accent)" stroke-width="3"/></svg>
+    <h1>Noten hochladen</h1>
+    PDF hierher ziehen oder auswählen.
+    <ul>
+      <li><i>1</i><span>Notenzeilen und Takte werden automatisch erkannt und auf der Seite markiert.</span></li>
+      <li><i>2</i><span>Tippe in einen Takt, um genau dort zu starten.</span></li>
+      <li><i>3</i><span>Die Zeile bleibt stehen, bis sie zu Ende gespielt ist, und rollt erst im letzten Schlag weiter.</span></li>
+    </ul>
+    <button id="open2" style="background:var(--accent);border-color:var(--accent);color:var(--ink);font-weight:700;height:48px;padding:0 26px">PDF auswählen</button>
+    <p style="margin:18px 0 0;font-size:12.5px">Deine PDF-Dateien werden nicht hochgeladen, sondern nur lokal in deinem Browser angezeigt.</p>
+    <div class="legal-links" style="justify-content:center;margin-top:10px"><a href="#" data-legal="privacy">Datenschutz</a><a href="#" data-legal="imprint">Impressum</a><a href="#" data-legal="terms">Nutzungsbedingungen</a></div>
+  </section>
+  <div id="sheet"><div id="mark"></div><div id="ph"></div></div>
+</main>
+
+<section id="songsView">
+  <div class="lib-head">
+    <div><h1>Meine Songs</h1><p id="libSub"></p></div>
+    <button id="libBack">← Zum Player</button>
+  </div>
+  <div class="lib-tools" id="libTools" hidden>
+    <input id="libSearch" type="search" placeholder="Songs suchen …" autocomplete="off">
+    <div class="seg" id="libSort"><button data-s="recent" class="on">Zuletzt gespielt</button><button data-s="name">Name</button><button data-s="plays">Beliebt</button></div>
+  </div>
+  <div id="libGrid"></div>
+  <div class="legal-links" style="justify-content:center;margin-top:32px"><a href="#" data-legal="privacy">Datenschutz</a><a href="#" data-legal="imprint">Impressum</a><a href="#" data-legal="terms">Nutzungsbedingungen</a></div>
+</section>
+<div class="dock" id="dock">
+  <div class="meta"><span id="stat">Bereit</span><span id="time">0:00 / 0:00</span></div>
+  <div id="beats"></div>
+  <div class="track"><i id="prog"></i></div>
+  <div class="row">
+    <div class="tempo"><button id="minus" class="ico" aria-label="Langsamer">−</button><label><input id="bpm" type="number" inputmode="numeric" min="30" max="260"><small>BPM</small></label><button id="plus" class="ico" aria-label="Schneller">+</button></div>
+    <div class="trans">
+      <button id="home" class="ico" aria-label="Zum Start"><svg viewBox="0 0 24 24"><path d="M6 5v14M19 5l-9 7 9 7z"/></svg></button>
+      <button id="prev" class="ico" aria-label="Vorherige Zeile"><svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg></button>
+      <button id="play" aria-label="Start"></button>
+      <button id="next" class="ico" aria-label="Nächste Zeile"><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+    </div>
+    <div class="tools"><button id="tapstart">Start mit Klick</button><button id="loop">Loop</button><button id="tap">Tap</button><button id="metro">Klick</button></div>
+  </div>
+  <input id="bpmR" type="range" min="30" max="260" aria-label="Tempo">
+</div>
+
+<div id="veil"></div>
+<aside id="drawer" aria-label="Einstellungen">
+  <div class="hd"><h2>Einstellungen</h2><button id="close" class="ico" aria-label="Schließen"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="grp"><h3>Wiedergabe</h3>
+    <label class="fld"><b>Taktart (Schläge pro Takt)</b><select id="bpb"></select></label>
+    <label class="sw">Vorzähler (1 Takt)<input id="count" type="checkbox"></label>
+  </div>
+  <div class="grp"><h3>Erkennung</h3>
+    <label class="fld"><b>Empfindlichkeit <em id="sensV"></em></b><input id="sens" type="range" min="25" max="75"><small>Erkennt zu wenig? Höher stellen. Erkennt Unsinn? Niedriger. Die Takte einer Zeile lassen sich außerdem direkt an der Zeile mit − / + korrigieren.</small></label>
+    <label class="fld"><b>Takte pro Zeile (falls nicht erkannt)</b><input id="mpl" type="number" min="1" max="16"></label>
+  </div>
+  <div class="grp"><h3>Üben &amp; Klick</h3>
+    <label class="fld"><b>Tempo-Trainer</b><select id="ramp"><option value="0">Aus</option><option value="1">+1 BPM pro Loop-Durchlauf</option><option value="2">+2 BPM pro Loop-Durchlauf</option><option value="5">+5 BPM pro Loop-Durchlauf</option><option value="10">+10 BPM pro Loop-Durchlauf</option></select><small>Mit aktivem Loop wird das Tempo nach jedem Durchlauf automatisch schneller.</small></label>
+    <label class="fld"><b>Trainer bis maximal (BPM)</b><input id="maxbpm" type="number" min="30" max="260"></label>
+    <label class="fld"><b>Klick-Unterteilung</b><select id="sub"><option value="1">Viertel</option><option value="2">Achtel</option></select></label>
+    <label class="fld"><b>Klick-Lautstärke</b><input id="vol" type="range" min="0" max="1.5" step="0.05"></label>
+  </div>
+  <div class="grp"><h3>Darstellung</h3>
+    <label class="fld"><b>Slide zur nächsten Zeile</b><select id="slide"><option value="0.4">Schnell</option><option value="0.9">Normal</option><option value="1.6">Langsam</option></select><small>Die Ansicht wechselt erst, wenn die Zeile zu Ende gespielt ist, und gleitet dann weich weiter.</small></label>
+    <label class="sw">Bühnenmodus (Kopfzeile ausblenden)<input id="stage" type="checkbox"></label>
+    <label class="fld"><b>Zoom <em id="zoomV"></em></b><input id="zoom" type="range" min="60" max="160" step="5"></label>
+    <div class="fld"><b>Design</b><div class="seg" id="theme"><button data-v="auto">Auto</button><button data-v="light">Hell</button><button data-v="dark">Dunkel</button></div></div>
+  </div>
+  <div class="grp"><h3>Rechtliches</h3>
+    <div class="legal-links v"><a href="#" data-legal="privacy">Datenschutzerklärung</a><a href="#" data-legal="imprint">Impressum</a><a href="#" data-legal="terms">Nutzungsbedingungen</a></div>
+  </div>
+</aside>
+<div id="tapbox" hidden><div class="card"><h2>Tempo einklicken</h2><p id="tapmsg">Tippe viermal im gewünschten Tempo auf die Fläche. Danach startet die Musik sofort.</p><div id="pad" role="button" aria-label="Tempo einklicken"><b>1</b><b>2</b><b>3</b><b>4</b></div><div id="tapbpm">–</div><button id="tapcancel">Abbrechen</button></div></div>
+<div id="accbox" hidden>
+  <div class="card">
+    <button id="accx" class="ico x" aria-label="Schließen"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <div id="accSetup" hidden>
+      <h2>Firebase verbinden</h2>
+      <p>Füge hier das <b>firebaseConfig</b>-Objekt aus deiner Firebase-Konsole ein (Projekteinstellungen → Deine Apps → Web-App). Danach kannst du dich registrieren und anmelden.</p>
+      <textarea id="cfgText" rows="7" placeholder="const firebaseConfig = {&#10;  apiKey: &quot;...&quot;,&#10;  authDomain: &quot;...&quot;,&#10;  projectId: &quot;...&quot;,&#10;  appId: &quot;...&quot;&#10;};"></textarea>
+      <div id="cfgErr" class="err"></div>
+      <button id="cfgSave" class="go">Speichern &amp; verbinden</button>
+    </div>
+    <form id="accFormEl" novalidate hidden>
+      <h2>Account</h2>
+      <p>Melde dich an oder erstelle ein neues Konto.</p>
+      <div class="seg" id="accTabs"><button type="button" data-t="login" class="on">Anmelden</button><button type="button" data-t="reg">Registrieren</button></div>
+      <button id="accGoogle" class="gbtn" type="button"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg><span id="accGoogleTxt">Mit Google anmelden</span></button>
+      <div class="or"><span>oder per E-Mail</span></div>
+      <input id="accName" placeholder="Name (optional)" autocomplete="name" hidden>
+      <input id="accMail" type="email" placeholder="E-Mail" autocomplete="email">
+      <input id="accPw" type="password" placeholder="Passwort" autocomplete="current-password">
+      <input id="accPw2" type="password" placeholder="Passwort wiederholen" autocomplete="new-password" hidden>
+      <label class="consent" id="accConsentRow" hidden><input type="checkbox" id="accConsent"><span>Ich habe die <a href="#" data-legal="privacy">Datenschutzerklärung</a> gelesen, akzeptiere die <a href="#" data-legal="terms">Nutzungsbedingungen</a> und bin mindestens 16 Jahre alt.</span></label>
+      <p id="accLoginNote" class="note">Mit der Anmeldung gelten die <a href="#" data-legal="terms">Nutzungsbedingungen</a> und die <a href="#" data-legal="privacy">Datenschutzerklärung</a>.</p>
+      <div id="accErr" class="err"></div>
+      <button id="accGo" class="go" type="submit">Anmelden</button>
+      <button id="accForgot" class="link" type="button">Passwort vergessen?</button>
+    </form>
+    <div id="accUser" hidden>
+      <div class="avatar" id="accAv">A</div>
+      <h2 id="accWho" style="text-align:center"></h2>
+      <p id="accMailShow" style="text-align:center"></p>
+      <button id="accOut" class="go" type="button">Abmelden</button>
+      <button id="accExport" class="link" type="button">Meine Daten exportieren (JSON)</button>
+      <button id="accDelete" class="link danger" type="button">Konto und Daten löschen</button>
+    </div>
+    <div class="legal-links" style="justify-content:center;margin-top:10px"><a href="#" data-legal="privacy">Datenschutz</a><a href="#" data-legal="imprint">Impressum</a><a href="#" data-legal="terms">Nutzungsbedingungen</a></div>
+    <button id="accCfgReset" class="link" type="button" hidden>Firebase-Konfiguration ändern</button>
+  </div>
+</div>
+<div id="legalbox" hidden>
+  <div class="card">
+    <button id="legalx" class="ico x" aria-label="Schließen"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <div class="seg" id="legalTabs"><button data-l="privacy" class="on">Datenschutz</button><button data-l="imprint">Impressum</button><button data-l="terms">Nutzungsbedingungen</button></div>
+    <div id="legalBody">
+<article id="L-privacy">
+<h2>Datenschutzerklärung</h2>
+<p class="muted">Stand: 22.11.2026 · Version 2026-11-22</p>
+<h3>1. Verantwortlicher</h3>
+<p><span class="ph">[Vor- und Nachname]</span>, <span class="ph">[Straße und Hausnummer]</span>, <span class="ph">[PLZ Ort]</span>, E-Mail: <span class="ph">[E-Mail-Adresse]</span> (siehe auch Impressum).</p>
+<h3>2. Überblick</h3>
+<p>Drum Reader ist ein Noten-Player im Browser. Deine PDF-Dateien werden ausschließlich lokal in deinem Browser verarbeitet und nicht auf einen Server hochgeladen. Ein Konto ist optional und nur für die Funktion „Meine Songs“ nötig. Es werden keine Werbe-, Tracking- oder Analysedienste eingesetzt.</p>
+<h3>3. Hosting und Server-Logfiles</h3>
+<p>Beim Aufruf der Seite verarbeitet der Hosting-Anbieter (<span class="ph">[Hosting-Anbieter eintragen, z. B. GitHub Pages oder Firebase Hosting]</span>) technisch notwendige Daten wie IP-Adresse, Datum und Uhrzeit, aufgerufene Seite und Browserinformationen in Server-Logfiles. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (sicherer und stabiler Betrieb der Seite).</p>
+<h3>4. Externe Bibliotheken (cdnjs / Cloudflare)</h3>
+<p>Zur Darstellung von PDFs (pdf.js) und für die Anmeldung (Firebase SDK) werden Skripte vom Content-Delivery-Network cdnjs.cloudflare.com (Cloudflare, Inc., USA) geladen. Dabei wird deine IP-Adresse an Cloudflare übermittelt. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (zuverlässige und schnelle Bereitstellung). Eine Übermittlung in die USA stützt sich auf das EU-US Data Privacy Framework (sofern der Anbieter zertifiziert ist) oder auf Standardvertragsklauseln.</p>
+<h3>5. Konto (Firebase Authentication)</h3>
+<p>Wenn du ein Konto erstellst, verarbeiten wir deine E-Mail-Adresse, dein Passwort (bei Google nur in gehashter Form gespeichert), optional deinen Namen, eine technische Nutzer-ID sowie Zeitpunkte der Registrierung und Anmeldung. Dienstleister ist Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland (Firebase); eine Verarbeitung durch Google LLC (USA) ist möglich und stützt sich auf das EU-US Data Privacy Framework bzw. Standardvertragsklauseln. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO (Bereitstellung des Kontos). Die Daten werden gespeichert, bis du dein Konto löschst.</p>
+<p>Optional kannst du dich mit deinem Google-Konto anmelden („Mit Google anmelden“). Dabei öffnet sich ein Anmeldefenster von Google; Google übermittelt uns deine E-Mail-Adresse, deinen Namen und dein Profilbild, und Google erfährt, dass du dich bei dieser Seite anmeldest. Es gelten zusätzlich die Datenschutzbestimmungen von Google. Die Nutzung ist freiwillig; Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO.</p>
+<h3>6. „Meine Songs“ (Cloud Firestore)</h3>
+<p>Wenn du angemeldet bist und ein PDF abspielst, speichern wir in deinem Konto: den Dateinamen, Seitenzahl, Anzahl der erkannten Zeilen und Takte, deine Taktkorrekturen, Tempo, Taktart, Startpunkt, Zeitpunkt und Anzahl der Wiedergaben, einen etwaigen Favoriten-Status sowie ein <b>verkleinertes Vorschaubild der ersten PDF-Seite</b>. Die PDF-Datei selbst bleibt nur lokal in deinem Browser (IndexedDB). Anbieter ist Google (siehe Nr. 5); Speicherort der Datenbank: <span class="ph">[Region eintragen, z. B. eur3 (Europa)]</span>. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO. Du kannst einzelne Songs jederzeit löschen oder dein gesamtes Konto samt Daten löschen.</p>
+<h3>7. Nachweis deiner Zustimmung</h3>
+<p>Zum Nachweis, dass du Datenschutzerklärung und Nutzungsbedingungen akzeptiert hast, speichern wir die akzeptierte Version und den Zeitpunkt in deinem Konto. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO in Verbindung mit Art. 5 Abs. 2 DSGVO (Nachweispflicht).</p>
+<h3>8. Speicherung im Browser (localStorage / IndexedDB)</h3>
+<p>Die Seite speichert in deinem Browser: deine Einstellungen (z. B. Tempo, Zoom, Design), die Anmeldesitzung von Firebase und – für „Meine Songs“ – Kopien deiner PDFs. Diese Speicherung ist für die von dir gewünschte Funktion unbedingt erforderlich (§ 25 Abs. 2 Nr. 2 TDDDG) und erfolgt daher ohne Einwilligung. Du kannst die Daten jederzeit über die Browser-Einstellungen oder durch Löschen deines Kontos entfernen.</p>
+<h3>9. Keine Analyse, keine Werbung</h3>
+<p>Es werden keine Analyse-, Tracking- oder Werbedienste und keine externen Schriftarten eingesetzt. Es findet keine automatisierte Entscheidungsfindung statt.</p>
+<h3>10. Deine Rechte</h3>
+<p>Du hast das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18), Datenübertragbarkeit (Art. 20) und Widerspruch gegen Verarbeitungen auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO (Art. 21). Im Account-Fenster kannst du deine Daten als JSON exportieren und dein Konto samt Daten löschen. Außerdem hast du das Recht, dich bei einer Datenschutz-Aufsichtsbehörde zu beschweren, z. B. bei der Landesbeauftragten für den Datenschutz Niedersachsen, Prinzenstraße 5, 30159 Hannover, oder der für dich zuständigen Behörde.</p>
+<h3>11. Alter</h3>
+<p>Ein Konto ist für Personen ab 16 Jahren vorgesehen. Jüngere Personen benötigen die Zustimmung ihrer Erziehungsberechtigten.</p>
+<h3>12. Änderungen</h3>
+<p>Wir passen diese Erklärung an, wenn sich Funktionen oder Rechtslage ändern. Bei wesentlichen Änderungen bitten wir dich beim nächsten Login erneut um Zustimmung.</p>
+</article>
+<article id="L-imprint" hidden>
+<h2>Impressum</h2>
+<h3>Angaben gemäß § 5 DDG</h3>
+<p><span class="ph">[Vor- und Nachname]</span><br><span class="ph">[Straße und Hausnummer]</span><br><span class="ph">[PLZ Ort]</span><br>Deutschland</p>
+<h3>Kontakt</h3>
+<p>E-Mail: <span class="ph">[E-Mail-Adresse]</span><br>Telefon (optional): <span class="ph">[Telefonnummer]</span></p>
+<h3>Verantwortlich für den Inhalt (§ 18 Abs. 2 MStV)</h3>
+<p><span class="ph">[Vor- und Nachname, Anschrift wie oben]</span></p>
+<h3>Verbraucherstreitbeilegung</h3>
+<p>Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
+<h3>Haftung für Links</h3>
+<p>Für Inhalte externer Seiten, auf die verwiesen wird, sind ausschließlich deren Betreiber verantwortlich. Bei Bekanntwerden von Rechtsverletzungen entfernen wir entsprechende Verweise umgehend.</p>
+</article>
+<article id="L-terms" hidden>
+<h2>Nutzungsbedingungen</h2>
+<p class="muted">Stand: 22.11.2026 · Version 2026-11-22</p>
+<h3>1. Leistung</h3>
+<p>Drum Reader ist ein kostenloser Noten-Player im Browser mit automatischem Scrollen, Metronom und optionalem Konto. Ein Anspruch auf bestimmte Funktionen oder dauerhafte Verfügbarkeit besteht nicht.</p>
+<h3>2. Konto</h3>
+<p>Du musst mindestens 16 Jahre alt sein oder die Zustimmung deiner Erziehungsberechtigten haben. Deine Angaben müssen wahr sein, deine Zugangsdaten hältst du geheim. Du bist für Aktivitäten in deinem Konto verantwortlich.</p>
+<h3>3. Deine Inhalte und Urheberrecht</h3>
+<p>Du darfst nur PDFs verwenden, an denen du die erforderlichen Rechte hast (z. B. eigene Noten, gemeinfreie Werke oder rechtmäßig erworbene Kopien für den privaten Gebrauch). PDFs werden lokal in deinem Browser verarbeitet. Ein verkleinertes Vorschaubild der ersten Seite wird in deinem Konto gespeichert; du bestätigst, dass du dazu berechtigt bist. Wir prüfen Inhalte nicht.</p>
+<h3>4. Verbotene Nutzung</h3>
+<p>Nicht erlaubt sind Missbrauch, Angriffe auf die Seite oder die Infrastruktur, automatisierte Massenzugriffe und der Versuch, auf fremde Konten oder Daten zuzugreifen.</p>
+<h3>5. Genauigkeit</h3>
+<p>Die Erkennung von Notenzeilen und Takten arbeitet automatisch und kann Fehler machen. Tempo- und Metronom-Genauigkeit hängen auch von Gerät, Browser und Audio-Ausgabe (z. B. Bluetooth) ab. Bitte prüfe erkannte Takte vor dem Üben.</p>
+<h3>6. Haftung</h3>
+<p>Wir haften unbeschränkt bei Vorsatz, grober Fahrlässigkeit sowie bei Verletzung von Leben, Körper oder Gesundheit. Bei leichter Fahrlässigkeit haften wir nur bei Verletzung wesentlicher Vertragspflichten und begrenzt auf den vertragstypischen, vorhersehbaren Schaden. Die gesetzliche Haftung nach dem Produkthaftungsgesetz bleibt unberührt.</p>
+<h3>7. Beendigung</h3>
+<p>Du kannst dein Konto jederzeit im Account-Fenster löschen. Bei Verstößen gegen diese Bedingungen dürfen wir Konten sperren oder löschen.</p>
+<h3>8. Änderungen</h3>
+<p>Wir dürfen diese Bedingungen mit Wirkung für die Zukunft ändern. Bei wesentlichen Änderungen bitten wir dich beim nächsten Login erneut um Zustimmung.</p>
+<h3>9. Schlussbestimmungen</h3>
+<p>Es gilt deutsches Recht; zwingende Verbraucherschutzvorschriften deines Aufenthaltsstaates bleiben unberührt. Sollte eine Bestimmung unwirksam sein, bleibt die Wirksamkeit der übrigen unberührt.</p>
+</article>
+    </div>
+  </div>
+</div>
+<div id="consentbox" hidden>
+  <div class="card">
+    <h2>Bitte bestätigen</h2>
+    <p>Um deinen Account weiter zu nutzen, bestätige bitte die aktuelle <a href="#" data-legal="privacy">Datenschutzerklärung</a> und die <a href="#" data-legal="terms">Nutzungsbedingungen</a>.</p>
+    <label class="consent"><input type="checkbox" id="cnChk"><span>Ich habe sie gelesen, akzeptiere sie und bin mindestens 16 Jahre alt.</span></label>
+    <div id="cnErr" class="err"></div>
+    <button id="cnOk" class="go" type="button">Akzeptieren</button>
+    <button id="cnOut" class="link" type="button">Stattdessen abmelden</button>
+  </div>
+</div>
+<div id="songbox" hidden>
+  <div class="card">
+    <button id="songx" class="ico x" aria-label="Schließen"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <h2>Meine Songs</h2>
+    <p>Songs, die du in deinem Account gespielt hast.</p>
+    <div id="songList"></div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/11.1.0/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/11.1.0/firebase-auth-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/11.1.0/firebase-firestore-compat.min.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const sheet = $('sheet'), mark = $('mark'), ph = $('ph');
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const mod = (a, n) => ((a % n) + n) % n;
+const ease = t => t * t * (3 - 2 * t);
+const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+
+const S = { bpm: 100, bpb: 4, mpl: 4, count: false, metro: false, loop: 0, ramp: 0, maxbpm: 200, vol: 1, sub: 1, stage: false, slide: 0.9, zoom: 100, sens: 45, theme: 'auto' };
+try { Object.assign(S, JSON.parse(localStorage.getItem('drumreader4') || '{}')); } catch (e) {}
+const save = () => { try { localStorage.setItem('drumreader4', JSON.stringify(S)); } catch (e) {} };
+
+let pages = [], systems = [], B = [0], total = 0, curW = 700, rtok = 0, busy = false;
+let startSys = 0, startMeasure = 0, beatPos = 0, playing = false, resumable = false;
+let last = 0, lastBi = -9999, raf = 0, curI = -1, audio = null, lock = null, userT = 0, toastT = 0;
+try { pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; } catch (e) {}
+
+function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 4200); }
+
+/* ================= Erkennung ================= */
+async function analyze(P) {
+  const b = P.proxy.getViewport({ scale: 1 });
+  const v = P.proxy.getViewport({ scale: 1500 / b.width });
+  const c = document.createElement('canvas');
+  c.width = Math.round(v.width); c.height = Math.round(v.height);
+  const ctx = c.getContext('2d', { willReadFrequently: true });
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+  await P.proxy.render({ canvasContext: ctx, viewport: v }).promise;
+  const im = ctx.getImageData(0, 0, c.width, c.height).data, d = new Uint8Array(c.width * c.height);
+  for (let i = 0, j = 0; j < d.length; i += 4, j++) d[j] = (im[i] * .3 + im[i + 1] * .59 + im[i + 2] * .11) < 195 ? 1 : 0;
+  P.dark = { w: c.width, h: c.height, d };
+}
+
+const mk = ls => ({ ls, top: ls[0], bot: ls[ls.length - 1], n: ls.length });
+
+function detect(D, sens) {
+  const { w, h, d } = D, row = new Float32Array(h);
+  let mx = 0;
+  for (let y = 0; y < h; y++) { let c = 0; const o = y * w; for (let x = 0; x < w; x++) c += d[o + x]; row[y] = c / w; if (row[y] > mx) mx = row[y]; }
+  if (mx < .25) return [];
+  const th = mx * (1 - sens), L = [];
+  for (let y = 0; y < h;) { if (row[y] >= th) { const a = y; while (y < h && row[y] >= th) y++; L.push((a + y - 1) / 2); } else y++; }
+  if (!L.length) return [];
+  /* Notenlinien-Abstand = häufigster Abstand */
+  const cnt = {}; let s = 0, best = 0;
+  for (let i = 1; i < L.length; i++) { const g = Math.round(L[i] - L[i - 1]); if (g >= 3 && g <= h * .03) cnt[g] = (cnt[g] || 0) + 1; }
+  for (const k in cnt) if (cnt[k] > best || (cnt[k] === best && +k < s)) { best = cnt[k]; s = +k; }
+  if (!s) s = 10;
+  /* Linien zu Gruppen bündeln, 5er-Systeme validieren */
+  const raw = []; let cur = [L[0]];
+  for (let i = 1; i < L.length; i++) { if (L[i] - L[i - 1] > s * 1.6) { raw.push(cur); cur = [L[i]]; } else cur.push(L[i]); }
+  raw.push(cur);
+  const split = raw.flatMap(ls => ls.length > 5 && ls.length % 5 === 0 ? Array.from({ length: ls.length / 5 }, (_, k) => ls.slice(k * 5, k * 5 + 5)) : [ls]);
+  const valid = ls => {
+    if (ls.length < 3 || ls.length > 6) return false;
+    let miss = 0;
+    for (let i = 1; i < ls.length; i++) { const g = ls[i] - ls[i - 1]; if (Math.abs(g - s) < s * .35) continue; if (Math.abs(g - 2 * s) < s * .35 && !miss++) continue; return false; }
+    return true;
+  };
+  let st = split.filter(valid).map(mk);
+  if (!st.length) st = split.filter(ls => ls.length <= 2).map(mk);
+  return st.map((q, k) => {
+    const pv = st[k - 1], nx = st[k + 1];
+    const y0 = Math.max(q.top - s * 2.8, pv ? (pv.bot + q.top) / 2 : 0);
+    const y1 = Math.min(q.bot + s * 2.2, nx ? (q.bot + nx.top) / 2 : h);
+    const yr = Math.round(q.top);
+    const col = x => d[yr * w + x] || d[(yr - 1) * w + x] || d[(yr + 1) * w + x];
+    let xl = 0, xr = w - 1;
+    for (; xl < w - 20; xl++) { let n = 0; for (let j = 0; j < 16; j++) n += col(xl + j); if (n >= 14) break; }
+    for (; xr > xl + 20; xr--) { let n = 0; for (let j = 0; j < 16; j++) n += col(xr - j); if (n >= 14) break; }
+    /* Taktstriche: volle Notensystem-Höhe, aber ohne Fortsetzung darüber/darunter (Notenhälse ausschließen) */
+    const bars = [];
+    if (q.n >= 3) {
+      const yt = Math.round(q.top), yb = Math.round(q.bot), H = yb - yt + 1;
+      const a0 = Math.max(0, Math.round(yt - s * .9)), a1 = Math.max(0, Math.round(yt - s * .4));
+      const b0 = Math.min(h - 1, Math.round(yb + s * .4)), b1 = Math.min(h - 1, Math.round(yb + s * .9));
+      const frac = (x, ya, yb2) => { let n = 0; for (let y = ya; y <= yb2; y++) n += d[y * w + x]; return yb2 >= ya ? n / (yb2 - ya + 1) : 0; };
+      const groups = []; let g = null;
+      for (let x = xl; x <= xr; x++) {
+        let n = 0; for (let y = yt; y <= yb; y++) n += d[y * w + x];
+        if (n >= H * .9 && frac(x, a0, a1) < .5 && frac(x, b0, b1) < .5) { if (g && x - g.e <= s * 1.2) g.e = x; else { if (g) groups.push(g); g = { a: x, e: x }; } }
+      }
+      if (g) groups.push(g);
+      groups.forEach(q2 => { const c = (q2.a + q2.e) / 2; if (!bars.length || c - bars[bars.length - 1] >= s * 5) bars.push(c); });
+    }
+    const bd = [...bars];
+    if (!bd.length || bd[0] - xl > s * 3.5) bd.unshift(xl);
+    if (xr - bd[bd.length - 1] > s * 3.5) bd.push(xr);
+    const det = bd.length - 1, auto = bars.length >= 2 && det >= 1 && det <= 16;
+    return { y0: y0 / h, y1: y1 / h, xl: xl / w, xr: xr / w, pre: 5 * s / w, bx: auto ? bd.map(v => v / w) : [xl / w, xr / w], det, auto, edited: false };
+  });
+}
+
+function buildSystems() {
+  sheet.querySelectorAll('.sys').forEach(e => e.remove());
+  systems = [];
+  pages.forEach((P, pi) => detect(P.dark, S.sens / 100).forEach(s => {
+    s.page = pi; s.measures = s.auto ? s.det : S.mpl;
+    s.el = document.createElement('div'); s.el.className = 'sys';
+    s.el.innerHTML = '<div class="bdg"><button data-d="-1" aria-label="Einen Takt weniger">−</button><span></span><button data-d="1" aria-label="Einen Takt mehr">+</button></div>';
+    sheet.appendChild(s.el); systems.push(s);
+  }));
+  curI = -1; startSys = 0; startMeasure = 0;
+}
+
+/* ================= Layout ================= */
+function bxOf(s) {
+  const n = s.measures; if (s.auto && n === s.det) return s.bx;
+  const a = s.bx[0], z = s.bx[s.bx.length - 1], r = [];
+  for (let k = 0; k <= n; k++) r.push(a + (z - a) * k / n);
+  return r;
+}
+function xAt(s, mf) {
+  const bx = bxOf(s), n = s.measures, m = clamp(Math.floor(mf), 0, n - 1);
+  let a = bx[m]; if (m === 0 && bx[1] - a > s.pre * 2.5) a += s.pre;
+  return a + (bx[m + 1] - a) * (mf - m);
+}
+function drawBars(s) {
+  s.el.querySelectorAll('.bl,.bn').forEach(e => e.remove());
+  const bx = bxOf(s), left = Math.max(0, s.xl * curW - 8);
+  bx.forEach((v, k) => {
+    const l = document.createElement('i'); l.className = 'bl'; l.style.left = (v * curW - left) + 'px'; s.el.appendChild(l);
+    if (k < s.measures) { const n = document.createElement('i'); n.className = 'bn'; n.textContent = k + 1; n.style.left = (v * curW - left + 4) + 'px'; s.el.appendChild(n); }
+  });
+}
+function layout() {
+  systems.forEach((s, k) => {
+    const cv = pages[s.page].canvas, hh = cv.offsetHeight, e = s.el;
+    s.top = cv.offsetTop + s.y0 * hh; s.h = (s.y1 - s.y0) * hh; e.dataset.i = k;
+    e.style.top = s.top + 'px'; e.style.height = s.h + 'px';
+    e.style.left = Math.max(0, s.xl * curW - 8) + 'px'; e.style.width = ((s.xr - s.xl) * curW + 16) + 'px';
+    drawBars(s);
+  });
+  refreshBadges(); placeMark(); cacheGeo();
+}
+function refreshBadges() {
+  systems.forEach(s => {
+    const sp = s.el.querySelector('span');
+    sp.textContent = s.measures + (s.measures === 1 ? ' Takt' : ' Takte');
+    sp.title = s.auto && !s.edited ? 'Automatisch erkannt' : 'Manuell / Standard';
+  });
+}
+function recalc(keep) {
+  let i = 0, p = 0;
+  if (keep && systems.length && B.length > 1) { const l = locate(Math.max(beatPos, startBeat())); i = l.i; p = l.p; }
+  B = [0]; systems.forEach(s => B.push(B[B.length - 1] + s.measures * S.bpb)); total = B[B.length - 1];
+  if (keep && systems.length) beatPos = B[i] + p * (B[i + 1] - B[i]);
+  if (playing) anchorNow();
+}
+function locate(b) {
+  if (!systems.length) return { i: 0, p: 0 };
+  let i = 0; while (i < systems.length - 1 && b >= B[i + 1]) i++;
+  return { i, p: clamp((b - B[i]) / (B[i + 1] - B[i]), 0, 1) };
+}
+function startBeat() {
+  if (!systems.length) return 0;
+  startSys = Math.min(startSys, systems.length - 1);
+  return B[startSys] + Math.min(startMeasure, systems[startSys].measures - 1) * S.bpb;
+}
+function placeMark() {
+  if (!systems.length) { mark.style.display = 'none'; return; }
+  const s = systems[Math.min(startSys, systems.length - 1)];
+  mark.style.display = 'block'; mark.style.top = s.top + 'px'; mark.style.height = s.h + 'px';
+  mark.style.left = (xAt(s, Math.min(startMeasure, s.measures - 1)) * curW) + 'px';
+}
+const anchor = () => {
+  const hb = document.querySelector('.top').getBoundingClientRect().bottom;
+  return hb + (innerHeight - hb - $('dock').offsetHeight - 14) * .5;
+};
+
+/* ================= Position anwenden =================
+   Die aktuelle Zeile bleibt am Anker stehen, bis sie zu Ende gespielt ist.
+   Erst im LETZTEN Schlag der Zeile rollt die Ansicht zur nächsten Zeile. */
+function apply(follow, dur) {
+  if (!systems.length) return;
+  const b = Math.max(beatPos, startBeat()), { i, p } = locate(b), s = systems[i];
+  if (i !== curI) {
+    curI = i;
+    systems.forEach((q, k) => { q.el.classList.toggle('active', k === i); q.el.classList.toggle('past', playing && k < i); });
+  }
+  ph.style.display = 'block'; ph.style.top = s.top + 'px'; ph.style.height = s.h + 'px';
+  ph.style.transform = 'translateX(' + (xAt(s, p * s.measures) * curW) + 'px)';
+  if (follow) {
+    camFollow(i, dur);
+  }
+  const nowT = performance.now();
+  if (playing && nowT - uiT < 120) return;
+  uiT = nowT;
+  const m = Math.min(s.measures, Math.floor(p * s.measures) + 1);
+  $('stat').textContent = 'Zeile ' + (i + 1) + ' von ' + systems.length + ' · Takt ' + m + ' von ' + s.measures;
+  $('time').textContent = fmt(Math.max(0, beatPos) * 60 / S.bpm) + ' / ' + fmt(total * 60 / S.bpm);
+  $('prog').style.width = (clamp(beatPos / total, 0, 1) * 100) + '%';
+}
+
+/* ================= Wiedergabe ================= */
+function click(acc, t0) {
+  try {
+    const a = audio, o = a.createOscillator(), g = a.createGain();
+    o.frequency.value = acc === null ? 820 : acc ? 1600 : 1050;
+    const v = (acc === null ? .14 : .35) * S.vol, t = t0 === undefined ? a.currentTime : t0;
+    g.gain.setValueAtTime(Math.max(v, .001), t); g.gain.exponentialRampToValueAtTime(.0005, t + .06);
+    o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + .07); return g;
+  } catch (e) {}
+}
+function frameOld(ts) {
+  if (!playing) return;
+  const dt = Math.min(.1, (ts - last) / 1000); last = ts;
+  beatPos += dt * S.bpm / 60;
+  if (S.loop) {
+    const le = B[Math.min(startSys + S.loop, systems.length)];
+    if (beatPos >= le) {
+      beatPos = startBeat() + (beatPos - le); lastBi = -9999;
+      if (S.ramp && S.bpm < S.maxbpm) { setBpm(Math.min(S.maxbpm, S.bpm + S.ramp)); toast('Tempo ' + S.bpm + ' BPM'); }
+    }
+  }
+  const bi = Math.floor(beatPos * S.sub);
+  if (bi !== lastBi) {
+    lastBi = bi;
+    const main = mod(bi, S.sub) === 0, beat = Math.floor(bi / S.sub), acc = mod(beat, S.bpb) === 0;
+    if (main) flash(mod(beat, S.bpb));
+    if (beatPos < startBeat()) { if (main) click(acc); } else if (S.metro) click(main ? acc : null);
+  }
+  if (beatPos >= total) { stop(); startFrom(startSys, startMeasure); toast('Ende erreicht'); return; }
+  const free = performance.now() - userT > 2500;
+  if (!free) wasManual = true; else if (wasManual) { wasManual = false; camIdx = -1; camY = scrollY; }
+  apply(free, free && camIdx === -1 ? .7 : undefined);
+  raf = requestAnimationFrame(frame);
+}
+function setPlayIcon() {
+  $('play').innerHTML = playing
+    ? '<svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1.2"/><rect x="14" y="5" width="4" height="14" rx="1.2"/></svg>'
+    : '<svg viewBox="0 0 24 24"><path d="M7 4.6v14.8a1 1 0 0 0 1.5.86l12-7.4a1 1 0 0 0 0-1.72l-12-7.4A1 1 0 0 0 7 4.6z"/></svg>';
+  $('play').setAttribute('aria-label', playing ? 'Pause' : 'Start');
+  document.body.classList.toggle('playing', playing);
+}
+async function playOld(pre) {
+  if (!systems.length) { $('file').click(); return; }
+  audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+  try { audio.resume(); } catch (e) {}
+  if (pre !== undefined) { beatPos = startBeat() - pre; resumable = false; }
+  else if (!resumable) beatPos = startBeat() - (S.count ? S.bpb : 0);
+  camIdx = -1; camY = scrollY;
+  lastBi = -9999; last = performance.now(); playing = true; setPlayIcon();
+  systems.forEach((q, k) => q.el.classList.toggle('past', k < curI));
+  try { navigator.wakeLock.request('screen').then(l => { lock = l; }).catch(() => {}); } catch (e) {}
+  raf = requestAnimationFrame(frame);
+}
+function stop() {
+  if (playing) resumable = true;
+  playing = false; cancelAnimationFrame(raf); clearInterval(timer); cancelFuture(-1); setPlayIcon(); if (songCounted) saveSong(false);
+  systems.forEach(q => q.el.classList.remove('past'));
+  try { if (lock) lock.release(); } catch (e) {}
+}
+function startFrom(i, m) {
+  startSys = clamp(i, 0, systems.length - 1); startMeasure = m;
+  beatPos = startBeat(); resumable = false; curI = -1;
+  camIdx = -1; camY = scrollY;
+  placeMark(); markLoop(); apply(true, .5);
+  if (playing) { beatPos -= S.count ? S.bpb : 0; anchorNow(); }
+}
+
+/* ================= PDF laden & rendern ================= */
+async function render() {
+  const tok = ++rtok;
+  curW = Math.min(innerWidth - 20, 1100) * S.zoom / 100;
+  sheet.style.width = curW + 'px';
+  sheet.querySelectorAll('canvas').forEach(c => c.remove());
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  for (const P of pages) {
+    const b = P.proxy.getViewport({ scale: 1 }), cv = document.createElement('canvas');
+    cv.style.width = curW + 'px'; cv.style.height = (curW * b.height / b.width) + 'px';
+    sheet.insertBefore(cv, mark); P.canvas = cv; P.base = b.width;
+  }
+  layout();
+  for (const P of pages) {
+    if (tok !== rtok) return;
+    const v = P.proxy.getViewport({ scale: curW / P.base * dpr });
+    P.canvas.width = v.width; P.canvas.height = v.height;
+    await P.proxy.render({ canvasContext: P.canvas.getContext('2d'), viewport: v }).promise;
+  }
+}
+async function loadFile(f) {
+  if (!f || busy) return;
+  busy = true; stop(); leaveLib();
+  try {
+    const buf = await f.arrayBuffer(); curBytes = buf.slice(0); curName = f.name.replace(/\.pdf$/i, ''); curSongId = null; songCounted = false;
+    const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
+    pages = [];
+    for (let i = 1; i <= pdf.numPages; i++) pages.push({ proxy: await pdf.getPage(i) });
+    $('empty').style.display = 'none'; $('fname').textContent = f.name; document.body.classList.add('loaded');
+    sheet.querySelectorAll('.sys').forEach(e => e.remove());
+    systems = []; B = [0]; total = 0; ph.style.display = 'none';
+    $('stat').textContent = 'Seiten werden geladen …';
+    await render();
+    for (let i = 0; i < pages.length; i++) { $('stat').textContent = 'Erkenne Notenzeilen … Seite ' + (i + 1) + ' von ' + pages.length; await analyze(pages[i]); }
+    buildSystems(); recalc(false); layout(); window.scrollTo(0, 0); startFrom(0, 0); await restoreSong();
+    const n = systems.reduce((a, s) => a + s.measures, 0), au = systems.filter(s => s.auto).length;
+    if (systems.length) toast(systems.length + ' Zeilen · ' + n + ' Takte erkannt (' + au + ' Zeilen mit Taktstrichen). Bitte kurz prüfen: Falsche Taktzahl lässt sich mit − / + korrigieren.');
+    else { toast('Keine Notenzeilen erkannt. Empfindlichkeit in den Einstellungen erhöhen.'); $('stat').textContent = 'Keine Notenzeilen erkannt'; }
+  } catch (e) { $('stat').textContent = 'Das PDF konnte nicht gelesen werden.'; }
+  busy = false;
+}
+function redetect() {
+  if (!pages.length || busy || !pages[0].dark) return;
+  stop(); buildSystems(); recalc(false); layout(); startFrom(0, 0);
+  toast(systems.length + ' Zeilen erkannt');
+}
+
+/* ================= Bedienung ================= */
+sheet.addEventListener('click', e => {
+  const bt = e.target.closest('.bdg button');
+  if (bt) {
+    const s = systems[+bt.closest('.sys').dataset.i];
+    s.measures = clamp(s.measures + (+bt.dataset.d), 1, 16); s.edited = true;
+    recalc(true); refreshBadges(); drawBars(s); placeMark(); apply(false); return;
+  }
+  if (e.target.closest('.bdg') || !systems.length) return;
+  const r = sheet.getBoundingClientRect(), y = e.clientY - r.top, x = (e.clientX - r.left) / curW;
+  let bi = 0, bd = 1e9;
+  systems.forEach((s, k) => {
+    const dd = y < s.top ? s.top - y : y > s.top + s.h ? y - s.top - s.h : 0;
+    const sc = dd * 1000 + Math.abs(y - s.top - s.h / 2);
+    if (sc < bd) { bd = sc; bi = k; }
+  });
+  const s = systems[bi], bx = bxOf(s); let m = 0;
+  for (let k = 0; k < s.measures; k++) if (x >= bx[k]) m = k;
+  startFrom(bi, m);
+});
+const step = d => { const { i } = locate(Math.max(beatPos, startBeat())); startFrom(i + d, 0); };
+$('play').onclick = () => playing ? stop() : play();
+$('home').onclick = () => { stop(); startFrom(startSys, startMeasure); };
+$('prev').onclick = () => step(-1);
+$('next').onclick = () => step(1);
+$('open').onclick = $('open2').onclick = () => $('file').click();
+$('file').onchange = e => { loadFile(e.target.files[0]); e.target.value = ''; };
+const drawer = on => document.body.classList.toggle('dopen', on);
+$('cfg').onclick = () => drawer(true); $('close').onclick = $('veil').onclick = () => drawer(false);
+
+function setBpm(v, fromSeg) {
+  const nv = clamp(Math.round(v * 10) / 10 || 100, 30, 260);
+  if (playing && !fromSeg && nv !== S.bpm) retempo(nv);
+  S.bpm = nv;
+  $('bpm').value = S.bpm; $('bpmR').value = S.bpm; save(); apply(false);
+}
+$('bpm').onchange = () => setBpm(+$('bpm').value);
+$('bpmR').oninput = () => setBpm(+$('bpmR').value);
+$('minus').onclick = () => setBpm(S.bpm - 1);
+$('plus').onclick = () => setBpm(S.bpm + 1);
+let taps = [];
+$('tap').onclick = () => {
+  const n = performance.now(); if (taps.length && n - taps[taps.length - 1] > 2000) taps = [];
+  taps.push(n); taps = taps.slice(-5);
+  if (taps.length > 1) setBpm(60000 / ((taps[taps.length - 1] - taps[0]) / (taps.length - 1)));
+};
+$('metro').onclick = () => { S.metro = !S.metro; $('metro').classList.toggle('on', S.metro); save(); };
+
+/* Start mit Klick: 4x tippen (1 2 3 4) bestimmt das Tempo, danach startet die Wiedergabe sofort */
+let tb = [];
+function resetPad() {
+  document.querySelectorAll('#pad b').forEach(b => b.classList.remove('on'));
+  $('tapbpm').textContent = '–';
+}
+function openTap() {
+  if (!systems.length) { toast('Lade zuerst ein PDF.'); return; }
+  stop(); drawer(false); tb = []; resetPad(); $('tapbox').hidden = false;
+}
+function closeTap() { $('tapbox').hidden = true; tb = []; }
+function hit(ts) {
+  const n = ts || performance.now();
+  if (tb.length && n - tb[tb.length - 1] > 2500) { tb = []; resetPad(); }
+  tb.push(n);
+  document.querySelectorAll('#pad b').forEach((b, i) => b.classList.toggle('on', i < tb.length));
+  audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+  try { audio.resume(); } catch (e) {}
+  click(tb.length === 1);
+  if (tb.length > 1) {
+    const bpm = 60000 / ((tb[tb.length - 1] - tb[0]) / (tb.length - 1));
+    $('tapbpm').textContent = Math.round(clamp(bpm, 30, 260)) + ' BPM';
+    if (tb.length === 4) { setBpm(bpm); closeTap(); play(0); }
+  }
+}
+$('tapstart').onclick = openTap;
+$('tapcancel').onclick = closeTap;
+$('pad').addEventListener('pointerdown', e => { e.preventDefault(); hit(e.timeStamp); });
+
+/* Loop, Tempo-Trainer, Beat-Anzeige, Unterteilung, Lautstärke, Bühnenmodus */
+/* Kamera: weiches Gleiten, erst wenn die Zeile durch ist */
+let camIdx = -1, camY = 0, slide = null, idleOn = false, uiT = 0, wasManual = false, sheetAbsTop = 0, anchorY = 300;
+const easeIO = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+/* ===== Präzises Timing: Audio-Uhr als Master, Klicks werden sample-genau vorausgeplant ===== */
+let curDy = 0, anim = null, camDirty = true, timer = null, segs = [], sched = [], nextTick = 0;
+const LOOK = .12;
+const clk = () => audio ? audio.currentTime : performance.now() / 1000;
+const lat = () => audio ? (audio.outputLatency || 0) : 0;
+function beatAt(t) {
+  let s = segs[0];
+  for (let i = 1; i < segs.length; i++) { if (segs[i].t <= t) s = segs[i]; else break; }
+  return s.b + (t - s.t) * s.bpm / 60;
+}
+function cancelFuture(from) {
+  const keep = [];
+  sched.forEach(x => { if (x.t > from) { try { x.g.disconnect(); } catch (e) {} } else keep.push(x); });
+  sched = keep;
+}
+function anchorNow() {
+  segs = [{ t: clk() + .04, b: beatPos, bpm: S.bpm }];
+  cancelFuture(-1); nextTick = Math.ceil(beatPos * S.sub - 1e-9); lastBi = -9999; schedule();
+}
+function retempo(v) {
+  const t = clk(), b = beatAt(t);
+  segs = [{ t, b, bpm: v }]; cancelFuture(t); nextTick = Math.ceil(b * S.sub - 1e-9);
+}
+function schedule() {
+  if (!playing || !audio || !segs.length) return;
+  const now = clk(), horizon = now + LOOK;
+  sched = sched.filter(x => x.t > now - .3);
+  for (let guard = 0; guard < 400; guard++) {
+    let tail = segs[segs.length - 1], bt = nextTick / S.sub;
+    if (S.loop) {
+      const le = B[Math.min(startSys + S.loop, systems.length)];
+      if (bt >= le - 1e-9) {
+        const tt = tail.t + (le - tail.b) * 60 / tail.bpm;
+        let nb = tail.bpm;
+        if (S.ramp && nb < S.maxbpm) nb = Math.min(S.maxbpm, nb + S.ramp);
+        segs.push({ t: tt, b: startBeat(), bpm: nb }); nextTick = Math.round(startBeat() * S.sub); continue;
+      }
+    }
+    if (bt >= total) return;
+    tail = segs[segs.length - 1];
+    const tt = tail.t + (bt - tail.b) * 60 / tail.bpm;
+    if (tt > horizon) return;
+    const beat = Math.floor(nextTick / S.sub), main = mod(nextTick, S.sub) === 0, acc = mod(beat, S.bpb) === 0;
+    let g = null;
+    if (bt < startBeat() - 1e-9) { if (main) g = click(acc, tt); } else if (S.metro) g = click(main ? acc : null, tt);
+    if (g) sched.push({ g, t: tt });
+    nextTick++;
+  }
+}
+async function play(pre) {
+  if (document.body.classList.contains('lib')) return;
+  if (!systems.length) { $('file').click(); return; }
+  if (!audio) { try { audio = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'interactive' }); } catch (e) { audio = new (window.AudioContext || window.webkitAudioContext)(); } }
+  try { audio.resume(); } catch (e) {}
+  if (pre !== undefined) { beatPos = startBeat() - pre; resumable = false; }
+  else if (!resumable) beatPos = startBeat() - (S.count ? S.bpb : 0);
+  camIdx = -1; playing = true; setPlayIcon();
+  systems.forEach((q, k) => q.el.classList.toggle('past', k < curI));
+  anchorNow();
+  if (!songCounted) saveSong(true);
+  clearInterval(timer); timer = setInterval(schedule, 25);
+  try { navigator.wakeLock.request('screen').then(l => { lock = l; }).catch(() => {}); } catch (e) {}
+  raf = requestAnimationFrame(frame);
+}
+function frame() {
+  if (!playing) return;
+  schedule();
+  const dispT = clk() - lat();
+  while (segs.length > 1 && segs[1].t <= dispT) {
+    segs.shift();
+    if (segs[0].bpm !== S.bpm) { setBpm(segs[0].bpm, true); toast('Tempo ' + S.bpm + ' BPM'); }
+  }
+  beatPos = beatAt(dispT);
+  const bf = Math.floor(beatPos);
+  if (bf !== lastBi) { lastBi = bf; flash(mod(bf, S.bpb)); }
+  if (beatPos >= total) { stop(); startFrom(startSys, startMeasure); toast('Ende erreicht'); return; }
+  const free = performance.now() - userT > 2500;
+  if (!free) wasManual = true; else if (wasManual) { wasManual = false; camIdx = -1; }
+  apply(free, free && camIdx === -1 ? .7 : undefined);
+  raf = requestAnimationFrame(frame);
+}
+
+/* ===== Kamera: GPU-Animation (Transform) statt Scrollen ===== */
+function currentDy() {
+  const tr = getComputedStyle(sheet).transform;
+  if (!tr || tr === 'none') return 0;
+  try { return -new DOMMatrix(tr).m42; } catch (e) { return curDy; }
+}
+function cacheGeo() { sheetAbsTop = sheet.getBoundingClientRect().top + scrollY + currentDy(); anchorY = anchor(); camDirty = true; }
+function camGo(i, dur) {
+  const s = systems[i];
+  const tdy = sheetAbsTop + s.top + s.h / 2 - anchorY - scrollY;
+  const cur = currentDy();
+  if (anim) { anim.cancel(); anim = null; }
+  const end = 'translate3d(0,' + (-tdy) + 'px,0)';
+  sheet.style.transform = end; curDy = tdy;
+  if (dur > 0 && Math.abs(tdy - cur) > 1 && sheet.animate) {
+    anim = sheet.animate([{ transform: 'translate3d(0,' + (-cur) + 'px,0)' }, { transform: end }], { duration: dur * 1000, easing: 'cubic-bezier(.45,.05,.25,1)' });
+    anim.onfinish = () => { anim = null; };
+  }
+}
+function camFollow(i, dur) {
+  const chg = i !== camIdx;
+  if (!chg && !camDirty) return;
+  camDirty = false; camIdx = i;
+  camGo(i, !chg ? 0 : dur === undefined ? Math.min(S.slide, systems[i].measures * S.bpb * 60 / S.bpm * .6) : dur);
+}
+$('bpm').step = '0.1';
+function camFollowOld(i, dur) {
+  const s = systems[i], now = performance.now();
+  const ty = Math.max(0, sheetAbsTop + s.top + s.h / 2 - anchorY);
+  if (i !== camIdx) {
+    camIdx = i;
+    const d = dur === undefined ? Math.min(S.slide, s.measures * S.bpb * 60 / S.bpm * .6) : dur;
+    slide = d > 0 ? { from: camY, t0: now, dur: d * 1000 } : null;
+  }
+  let y = ty;
+  if (slide) {
+    const u = clamp((now - slide.t0) / slide.dur, 0, 1);
+    y = slide.from + (ty - slide.from) * easeIO(u);
+    if (u >= 1) slide = null;
+  }
+  camY = y;
+  const dpr = window.devicePixelRatio || 1;
+  window.scrollTo(0, Math.round(y * dpr) / dpr);
+  if (slide && !playing && !idleOn) { idleOn = true; requestAnimationFrame(() => { idleOn = false; if (!playing && systems.length) apply(true); }); }
+}
+function buildDots() { $('beats').innerHTML = '<i></i>'.repeat(S.bpb); }
+function flash(k) { const d = $('beats').children; for (let j = 0; j < d.length; j++) d[j].classList.toggle('on', j === k); }
+function markLoop() {
+  systems.forEach((q, k) => q.el.classList.toggle('inloop', S.loop > 0 && k >= startSys && k < startSys + S.loop));
+  const b = $('loop'); b.textContent = S.loop ? 'Loop · ' + S.loop + (S.loop === 1 ? ' Zeile' : ' Zeilen') : 'Loop'; b.classList.toggle('on', !!S.loop); cacheGeo();
+}
+function setStage(on) { S.stage = on; document.body.classList.toggle('stage', on); $('stage').checked = on; save(); cacheGeo(); }
+$('loop').onclick = () => {
+  const o = [0, 1, 2, 4]; S.loop = o[(o.indexOf(S.loop) + 1) % 4]; save(); markLoop();
+  toast(S.loop ? 'Loop ab Startpunkt über ' + S.loop + (S.loop === 1 ? ' Zeile' : ' Zeilen') : 'Loop aus');
+};
+$('vol').value = S.vol; $('sub').value = S.sub; $('ramp').value = S.ramp; $('maxbpm').value = S.maxbpm;
+$('vol').oninput = () => { S.vol = +$('vol').value; save(); };
+$('sub').onchange = () => { S.sub = +$('sub').value; lastBi = -9999; save(); if (playing) retempo(S.bpm); };
+$('ramp').onchange = () => { S.ramp = +$('ramp').value; save(); };
+$('maxbpm').onchange = () => { S.maxbpm = clamp(+$('maxbpm').value || 200, 30, 260); $('maxbpm').value = S.maxbpm; save(); };
+$('stage').onchange = () => setStage($('stage').checked);
+$('slide').value = S.slide; $('slide').onchange = () => { S.slide = +$('slide').value; save(); };
+buildDots(); markLoop(); setStage(S.stage);
+
+for (let n = 2; n <= 12; n++) $('bpb').add(new Option(n + '/4' + (n === 4 ? ' (Standard)' : ''), n));
+$('bpb').onchange = () => { S.bpb = +$('bpb').value; save(); recalc(true); buildDots(); apply(false); };
+$('count').onchange = () => { S.count = $('count').checked; save(); };
+$('mpl').onchange = () => {
+  S.mpl = clamp(+$('mpl').value || 4, 1, 16); save();
+  systems.forEach(s => { if (!s.auto && !s.edited) { s.measures = S.mpl; drawBars(s); } });
+  recalc(true); refreshBadges(); placeMark(); apply(false);
+};
+let t1, t2;
+$('sens').oninput = () => { S.sens = +$('sens').value; $('sensV').textContent = S.sens + ' %'; save(); clearTimeout(t1); t1 = setTimeout(redetect, 400); };
+$('zoom').oninput = () => {
+  S.zoom = +$('zoom').value; $('zoomV').textContent = S.zoom + ' %'; save(); clearTimeout(t2);
+  t2 = setTimeout(reflow, 300);
+};
+async function reflow() {
+  if (!pages.length || busy) return;
+  busy = true; const was = playing; stop(); await render(); busy = false; layout(); apply(true); if (was) play();
+}
+function setTheme(v) {
+  S.theme = v; save();
+  if (v === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', v);
+  document.querySelectorAll('#theme button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+}
+document.querySelectorAll('#theme button').forEach(b => b.onclick = () => setTheme(b.dataset.v));
+
+$('bpb').value = S.bpb; $('count').checked = S.count; $('mpl').value = S.mpl;
+$('sens').value = S.sens; $('sensV').textContent = S.sens + ' %'; $('zoom').value = S.zoom; $('zoomV').textContent = S.zoom + ' %';
+$('metro').classList.toggle('on', S.metro); setBpm(S.bpm); setPlayIcon(); setTheme(S.theme);
+
+['wheel', 'touchmove'].forEach(ev => addEventListener(ev, () => { userT = performance.now(); }, { passive: true }));
+addEventListener('keydown', e => {
+  if (!$('tapbox').hidden) {
+    if (e.code === 'Space' || e.key === 'Enter') { e.preventDefault(); if (!e.repeat) hit(e.timeStamp); }
+    else if (e.key === 'Escape') closeTap();
+    return;
+  }
+  if (/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) return;
+  if (e.code === 'Space') { e.preventDefault(); document.activeElement.blur(); playing ? stop() : play(); }
+  else if (e.key === 'ArrowRight') step(1);
+  else if (e.key === 'ArrowLeft') step(-1);
+  else if (e.key === 'ArrowUp') { e.preventDefault(); setBpm(S.bpm + (e.shiftKey ? 5 : 1)); }
+  else if (e.key === 'ArrowDown') { e.preventDefault(); setBpm(S.bpm - (e.shiftKey ? 5 : 1)); }
+  else if (e.key === 'Escape') drawer(false);
+  else if (e.key === 'l' || e.key === 'L') $('loop').click();
+  else if (e.key === 'f' || e.key === 'F') setStage(!S.stage);
+});
+let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(reflow, 300); });
+['dragover', 'dragenter'].forEach(ev => addEventListener(ev, e => { e.preventDefault(); document.body.classList.add('drag'); }));
+['dragleave', 'drop'].forEach(ev => addEventListener(ev, e => { e.preventDefault(); document.body.classList.remove('drag'); }));
+addEventListener('drop', e => { const f = e.dataTransfer.files[0]; if (f && f.type === 'application/pdf') loadFile(f); });
+
+/* ===== Account (Firebase Authentication: E-Mail & Passwort) ===== */
+// Optional: eigene Firebase-Konfiguration hier eintragen. Alternativ im Account-Fenster einfügen.
+const FIREBASE_CONFIG = {
+  apiKey: 'AIzaSyAvzqZA7jqaBtMzFmsm5HIF5qYG5OvyK4s',
+  authDomain: 'drums-1b5c8.firebaseapp.com',
+  projectId: 'drums-1b5c8',
+  storageBucket: 'drums-1b5c8.firebasestorage.app',
+  messagingSenderId: '986137214022',
+  appId: '1:986137214022:web:5d82486f6bc398be49de47'
+};
+const FB_KEY = 'drumreader_fb';
+const PERSON_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>';
+let fbAuth = null, fbUser = null, accTab = 'login';
+function fbCfg() {
+  if (FIREBASE_CONFIG.apiKey) return FIREBASE_CONFIG;
+  try { const c = JSON.parse(localStorage.getItem(FB_KEY) || 'null'); if (c && c.apiKey) return c; } catch (e) {}
+  return null;
+}
+function initFb() {
+  const cfg = fbCfg();
+  if (!cfg || !window.firebase) return false;
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(cfg);
+    fbAuth = firebase.auth(); fbAuth.languageCode = 'de';
+    fbAuth.onAuthStateChanged(u => { fbUser = u; renderAcc(); });
+    return true;
+  } catch (e) { return false; }
+}
+const FB_ERR = {
+  'auth/invalid-email': 'Das ist keine gültige E-Mail-Adresse.',
+  'auth/user-not-found': 'E-Mail oder Passwort ist falsch.',
+  'auth/wrong-password': 'E-Mail oder Passwort ist falsch.',
+  'auth/invalid-credential': 'E-Mail oder Passwort ist falsch.',
+  'auth/email-already-in-use': 'Diese E-Mail-Adresse ist bereits registriert. Bitte melde dich an.',
+  'auth/weak-password': 'Das Passwort ist zu schwach (mindestens 6 Zeichen).',
+  'auth/too-many-requests': 'Zu viele Versuche. Bitte warte einen Moment und versuche es erneut.',
+  'auth/user-disabled': 'Dieses Konto wurde deaktiviert.',
+  'auth/operation-not-allowed': 'Die Anmeldung per E-Mail und Passwort ist im Firebase-Projekt nicht aktiviert.',
+  'auth/configuration-not-found': 'Firebase Authentication ist in deinem Projekt noch nicht eingerichtet. Öffne die Firebase-Konsole → Authentication → „Los geht’s“ und aktiviere unter „Anmeldemethode“ E-Mail/Passwort.',
+  'auth/account-exists-with-different-credential': 'Zu dieser E-Mail-Adresse gibt es bereits ein Konto mit einer anderen Anmeldemethode. Melde dich mit E-Mail und Passwort an.',
+  'auth/popup-blocked': 'Das Anmeldefenster wurde vom Browser blockiert. Bitte erlaube Pop-ups für diese Seite.',
+  'auth/unauthorized-domain': 'Diese Domain ist in Firebase nicht als autorisierte Domain eingetragen.',
+  'auth/network-request-failed': 'Keine Verbindung zu Firebase. Hinweis: In der gehosteten Vorschau auf claude.ai sind Verbindungen zu Firebase blockiert. Lade die Datei herunter und hoste sie selbst (z. B. Firebase Hosting).'
+};
+const fbMsg = e => FB_ERR[e && e.code] || (e && e.message) || 'Unbekannter Fehler.';
+const showErr = m => { $('accErr').textContent = m || ''; };
+function renderAcc() {
+  libAuth(); consentAuth();
+  const ready = !!fbAuth;
+  $('accSetup').hidden = ready; $('accFormEl').hidden = !ready || !!fbUser; $('accUser').hidden = !fbUser;
+  $('accCfgReset').hidden = !(fbCfg() && !FIREBASE_CONFIG.apiKey);
+  if (!ready) $('cfgErr').textContent = window.firebase ? '' : 'Die Firebase-Skripte konnten nicht geladen werden. Prüfe deine Internetverbindung.';
+  const b = $('acc'); b.classList.toggle('in', !!fbUser);
+  const ini = fbUser ? ((fbUser.displayName || fbUser.email || '?').trim()[0] || '?').toUpperCase() : '';
+  if (fbUser) b.textContent = ini; else b.innerHTML = PERSON_SVG;
+  if (fbUser) { $('accAv').textContent = ini; $('accWho').textContent = fbUser.displayName || 'Angemeldet'; $('accMailShow').textContent = fbUser.email || ''; }
+  const reg = accTab === 'reg';
+  document.querySelectorAll('#accTabs button').forEach(x => x.classList.toggle('on', x.dataset.t === accTab));
+  $('accName').hidden = !reg; $('accPw2').hidden = !reg; $('accForgot').hidden = reg;
+  $('accConsentRow').hidden = !reg; $('accLoginNote').hidden = reg;
+  $('accGo').textContent = reg ? 'Konto erstellen' : 'Anmelden'; $('accGo').disabled = false;
+  $('accGoogleTxt').textContent = reg ? 'Mit Google registrieren' : 'Mit Google anmelden'; $('accGoogle').disabled = false;
+  $('accPw').autocomplete = reg ? 'new-password' : 'current-password';
+}
+function openAcc() {
+  showErr(''); renderAcc(); $('accbox').hidden = false;
+  setTimeout(() => { if (fbAuth && !fbUser) $('accMail').focus(); }, 60);
+}
+function closeAcc() { $('accbox').hidden = true; }
+$('acc').onclick = openAcc; $('accx').onclick = closeAcc;
+$('accbox').addEventListener('pointerdown', e => { if (e.target === $('accbox')) closeAcc(); });
+addEventListener('keydown', e => { if (!$('accbox').hidden && $('legalbox').hidden) { if (e.key === 'Escape') closeAcc(); e.stopPropagation(); } }, true);
+document.querySelectorAll('#accTabs button').forEach(b => b.onclick = () => { accTab = b.dataset.t; showErr(''); renderAcc(); });
+$('accFormEl').onsubmit = async e => {
+  e.preventDefault(); if (!fbAuth) return;
+  const mail = $('accMail').value.trim(), pw = $('accPw').value, reg = accTab === 'reg';
+  if (!/^\S+@\S+\.\S+$/.test(mail)) return showErr('Bitte gib eine gültige E-Mail-Adresse ein.');
+  if (pw.length < 6) return showErr('Das Passwort muss mindestens 6 Zeichen lang sein.');
+  if (reg && pw !== $('accPw2').value) return showErr('Die Passwörter stimmen nicht überein.');
+  if (reg && !$('accConsent').checked) return showErr('Bitte bestätige die Datenschutzerklärung und die Nutzungsbedingungen.');
+  showErr(''); $('accGo').disabled = true; $('accGo').textContent = '…';
+  try {
+    if (reg) {
+      justReg = true; setTimeout(() => { justReg = false; }, 15000);
+      const c = await fbAuth.createUserWithEmailAndPassword(mail, pw), n = $('accName').value.trim();
+      if (n) await c.user.updateProfile({ displayName: n });
+      await saveConsent(c.user.uid);
+      toast('Konto erstellt. Willkommen!');
+    } else { await fbAuth.signInWithEmailAndPassword(mail, pw); toast('Angemeldet.'); }
+    $('accPw').value = ''; $('accPw2').value = ''; closeAcc();
+  } catch (err) { showErr(fbMsg(err)); }
+  renderAcc();
+};
+$('accForgot').onclick = async () => {
+  const mail = $('accMail').value.trim();
+  if (!/^\S+@\S+\.\S+$/.test(mail)) return showErr('Gib oben deine E-Mail-Adresse ein, dann senden wir dir einen Link zum Zurücksetzen.');
+  try { await fbAuth.sendPasswordResetEmail(mail); showErr(''); toast('E-Mail zum Zurücksetzen wurde gesendet.'); } catch (err) { showErr(fbMsg(err)); }
+};
+$('accOut').onclick = async () => { try { await fbAuth.signOut(); } catch (e) {} closeAcc(); toast('Abgemeldet.'); };
+$('accCfgReset').onclick = () => { try { localStorage.removeItem(FB_KEY); } catch (e) {} location.reload(); };
+$('cfgSave').onclick = () => {
+  const cfg = {}, re = /["']?(\w+)["']?\s*:\s*["']([^"']*)["']/g; let m;
+  while ((m = re.exec($('cfgText').value))) cfg[m[1]] = m[2];
+  if (!cfg.apiKey || !cfg.projectId) { $('cfgErr').textContent = 'Es fehlen apiKey und projectId. Bitte das komplette firebaseConfig-Objekt einfügen.'; return; }
+  try { localStorage.setItem(FB_KEY, JSON.stringify(cfg)); } catch (e) {}
+  if (initFb()) { renderAcc(); toast('Firebase verbunden.'); } else $('cfgErr').textContent = 'Firebase konnte nicht gestartet werden (Skripte nicht geladen oder Konfiguration ungültig).';
+};
+initFb(); renderAcc();
+
+/* ===== Meine Songs: Verlauf in Firestore, PDF-Datei lokal in IndexedDB ===== */
+let curBytes = null, curName = '', curSongId = null, songCounted = false, lastSave = 0;
+const idbOpen = () => new Promise((res, rej) => { const r = indexedDB.open('drumreader', 1); r.onupgradeneeded = () => r.result.createObjectStore('pdf'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+async function idbRun(mode, fn) {
+  const db = await idbOpen();
+  return new Promise((res, rej) => { const t = db.transaction('pdf', mode), rq = fn(t.objectStore('pdf')); t.oncomplete = () => res(rq && rq.result); t.onerror = () => rej(t.error); });
+}
+const idbPut = (k, v) => idbRun('readwrite', s => s.put(v, k));
+const idbGet = k => idbRun('readonly', s => s.get(k));
+const idbDel = k => idbRun('readwrite', s => s.delete(k));
+const idbKeys = async () => { try { return new Set(await idbRun('readonly', s => s.getAllKeys())); } catch (e) { return new Set(); } };
+const songsCol = () => (fbUser && window.firebase && firebase.firestore) ? firebase.firestore().collection('users').doc(fbUser.uid).collection('songs') : null;
+async function pdfId(bytes) {
+  try { const h = await crypto.subtle.digest('SHA-256', bytes); return Array.from(new Uint8Array(h)).slice(0, 16).map(b => b.toString(16).padStart(2, '0')).join(''); }
+  catch (e) { return 'n' + bytes.byteLength + '_' + curName.replace(/\W/g, '').slice(0, 20); }
+}
+async function saveSong(first) {
+  const col = songsCol();
+  if (!col || !curBytes || !systems.length) return;
+  if (first) { if (songCounted) return; songCounted = true; }
+  else if (Date.now() - lastSave < 4000) return;
+  lastSave = Date.now();
+  try {
+    if (!curSongId) curSongId = await pdfId(curBytes);
+    const FV = firebase.firestore.FieldValue;
+    const data = { name: curName, pages: pages.length, lines: systems.length, bars: systems.reduce((a, s) => a + s.measures, 0), bpm: S.bpm, bpb: S.bpb, measures: systems.map(s => s.measures), startSys, startMeasure, lastPlayed: FV.serverTimestamp() };
+    if (first) { data.plays = FV.increment(1); const th = makeThumb(); if (th) data.thumb = th; }
+    await col.doc(curSongId).set(data, { merge: true });
+    if (first) idbPut(fbUser.uid + '_' + curSongId, curBytes).catch(() => {});
+  } catch (e) { if (first) songCounted = false; }
+}
+async function restoreSong() {
+  const col = songsCol();
+  if (!col || !curBytes) return;
+  try {
+    curSongId = await pdfId(curBytes);
+    const snap = await Promise.race([col.doc(curSongId).get(), new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 4000))]);
+    if (!snap.exists) return;
+    const d = snap.data();
+    if (d.bpb && d.bpb !== S.bpb) { S.bpb = d.bpb; $('bpb').value = S.bpb; buildDots(); save(); }
+    if (d.measures && d.measures.length === systems.length) systems.forEach((s, k) => { const m = clamp(+d.measures[k] || s.measures, 1, 16); if (m !== s.measures) { s.measures = m; s.edited = true; } });
+    recalc(false); layout();
+    if (d.bpm) setBpm(d.bpm);
+    startFrom(clamp(d.startSys || 0, 0, systems.length - 1), d.startMeasure || 0);
+    toast('Gespeicherte Einstellungen für „' + curName + '“ geladen.');
+  } catch (e) {}
+}
+function songErr(e) {
+  const c = e && e.code, m = (e && e.message) || '';
+  if (c === 'permission-denied') return 'Zugriff verweigert. Prüfe die Firestore-Regeln (users/{uid}/…).';
+  if (c === 'not-found' || c === 'failed-precondition' || /does not exist|not been used|disabled/i.test(m)) return 'Firestore ist noch nicht eingerichtet: Firebase-Konsole → Build → Firestore Database → Datenbank erstellen.';
+  if (c === 'unavailable') return 'Keine Verbindung zu Firestore.';
+  return m || 'Die Songs konnten nicht geladen werden.';
+}
+const TRASH = '<svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3"/></svg>';
+async function loadSongsOld() {
+  const L = $('songList'); L.innerHTML = '<div class="empty">Lade …</div>';
+  try {
+    const [snap, keys] = await Promise.all([songsCol().orderBy('lastPlayed', 'desc').limit(100).get(), idbKeys()]);
+    if (snap.empty) { L.innerHTML = '<div class="empty">Noch keine Songs. Sobald du ein Stück abspielst, erscheint es hier.</div>'; return; }
+    L.innerHTML = '';
+    snap.forEach(doc => {
+      const d = doc.data(), here = keys.has(fbUser.uid + '_' + doc.id);
+      const row = document.createElement('div'); row.className = 'song';
+      const info = document.createElement('div'); info.className = 'si';
+      const t = document.createElement('b'); t.textContent = d.name || 'Ohne Titel';
+      const sm = document.createElement('small');
+      const dt = d.lastPlayed && d.lastPlayed.toDate ? d.lastPlayed.toDate().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'gerade eben';
+      sm.textContent = [dt, (d.bpm || '–') + ' BPM', (d.plays || 1) + '× gespielt', here ? 'auf diesem Gerät' : 'Datei erneut wählen'].join(' · ');
+      info.append(t, sm);
+      const open = document.createElement('button'); open.className = 'op'; open.textContent = here ? 'Öffnen' : 'Datei wählen';
+      open.onclick = () => openSong(doc.id, d.name, here);
+      const rm = document.createElement('button'); rm.className = 'ico rm'; rm.setAttribute('aria-label', 'Löschen'); rm.title = 'Zweimal tippen zum Löschen'; rm.innerHTML = TRASH;
+      let armed = false;
+      rm.onclick = async () => {
+        if (!armed) { armed = true; rm.classList.add('arm'); setTimeout(() => { armed = false; rm.classList.remove('arm'); }, 2500); return; }
+        try { await songsCol().doc(doc.id).delete(); idbDel(fbUser.uid + '_' + doc.id).catch(() => {}); row.remove(); } catch (e) { toast(songErr(e)); }
+      };
+      row.append(info, open, rm); L.appendChild(row);
+    });
+  } catch (e) { L.innerHTML = ''; const m = document.createElement('div'); m.className = 'empty err'; m.textContent = songErr(e); L.appendChild(m); }
+}
+async function openSong(id, name, here) {
+  closeSongs();
+  if (here) {
+    try { const bytes = await idbGet(fbUser.uid + '_' + id); if (bytes) { loadFile(new File([bytes], (name || 'Song') + '.pdf', { type: 'application/pdf' })); return; } } catch (e) {}
+  }
+  toast('Wähle die PDF „' + (name || 'Song') + '“ erneut aus. Deine gespeicherten Einstellungen werden dann automatisch geladen.');
+  $('file').click();
+}
+function openSongsOld() {
+  if (!fbUser) { toast('Melde dich an, um deine Songs zu sehen.'); openAcc(); return; }
+  $('songbox').hidden = false; loadSongs();
+}
+function closeSongsOld() { $('songbox').hidden = true; }
+/* ===== Meine Songs als eigene Seite (Kachel-Übersicht mit Vorschau) ===== */
+var libItems = [], libSort = 'recent', libQuery = '', savedY = 0, libUid, libState = 'idle', libErr = '';
+const mkEl = (t, c) => { const e = document.createElement(t); if (c) e.className = c; return e; };
+const NOTE_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l11-2v12"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>';
+function makeThumb() {
+  try {
+    const c = pages[0] && pages[0].canvas; if (!c || !c.width) return null;
+    const w = 320, h = Math.round(c.height * w / c.width), t = document.createElement('canvas');
+    t.width = w; t.height = h; const x = t.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, w, h); x.drawImage(c, 0, 0, w, h);
+    return t.toDataURL('image/jpeg', .62);
+  } catch (e) { return null; }
+}
+function fmtDay(d) {
+  if (!d) return 'Gerade eben';
+  const same = (a, b) => a.toDateString() === b.toDateString();
+  if (same(d, new Date())) return 'Heute'; if (same(d, new Date(Date.now() - 864e5))) return 'Gestern';
+  return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+function showView(v) {
+  const lib = v === 'songs';
+  if (lib === document.body.classList.contains('lib')) return;
+  if (lib) { if (playing) stop(); savedY = scrollY; }
+  document.body.classList.toggle('lib', lib);
+  $('songsBtn').classList.toggle('on', lib);
+  if (lib) { window.scrollTo(0, 0); renderLib(); loadLib(); }
+  else { window.scrollTo(0, savedY); cacheGeo(); if (systems.length) { camIdx = -1; apply(true, 0); } }
+}
+function leaveLib() { if (!document.body.classList.contains('lib')) return; if (location.hash === '#songs') location.hash = ''; showView('player'); }
+function closeSongs() { leaveLib(); }
+function openSongs() {
+  if (document.body.classList.contains('lib')) { leaveLib(); }
+  else { location.hash = 'songs'; showView('songs'); }
+}
+function libAuth() {
+  if (!document.body.classList.contains('lib')) return;
+  const u = fbUser ? fbUser.uid : null;
+  if (u !== libUid) { libUid = u; libItems = []; if (u) loadLib(); else renderLib(); }
+}
+async function loadLib() {
+  const col = songsCol(); if (!col) return;
+  libUid = fbUser.uid; libState = 'loading'; renderLib();
+  try {
+    const [snap, keys] = await Promise.all([col.orderBy('lastPlayed', 'desc').limit(60).get(), idbKeys()]);
+    libItems = []; snap.forEach(d => libItems.push(Object.assign({ id: d.id, here: keys.has(fbUser.uid + '_' + d.id) }, d.data())));
+    libState = 'ok';
+  } catch (e) { libState = 'err'; libErr = songErr(e); }
+  renderLib();
+}
+function libMsg(text, btn, fn) {
+  const d = mkEl('div', 'libmsg'); d.append(document.createTextNode(text));
+  if (btn) { d.append(mkEl('br')); const b = mkEl('button', 'op'); b.textContent = btn; b.onclick = () => fn(); d.append(b); }
+  return d;
+}
+function renderLib() {
+  const G = $('libGrid'), sub = $('libSub');
+  G.innerHTML = ''; $('libTools').hidden = !fbUser;
+  if (!fbUser) { sub.textContent = 'Melde dich an, um deine Songs zu sehen.'; G.appendChild(libMsg('Deine gespielten Songs werden in deinem Account gespeichert.', 'Anmelden', openAcc)); return; }
+  if (libState === 'loading') { sub.textContent = 'Lade …'; G.appendChild(libMsg('Songs werden geladen …')); return; }
+  if (libState === 'err') { sub.textContent = ''; G.appendChild(libMsg(libErr, 'Erneut versuchen', loadLib)); return; }
+  const list = libItems.filter(s => (s.name || '').toLowerCase().includes(libQuery));
+  const tm = s => s.lastPlayed && s.lastPlayed.toMillis ? s.lastPlayed.toMillis() : Date.now();
+  list.sort((a, b) => (b.fav ? 1 : 0) - (a.fav ? 1 : 0) || (libSort === 'name' ? (a.name || '').localeCompare(b.name || '', 'de') : libSort === 'plays' ? (b.plays || 0) - (a.plays || 0) : tm(b) - tm(a)));
+  sub.textContent = libItems.length + (libItems.length === 1 ? ' Song' : ' Songs') + ' in deinem Account';
+  const add = mkEl('div', 'sc add'); add.innerHTML = '<span class="plus">+</span><b>PDF hinzufügen</b><small>Neuen Song öffnen</small>';
+  add.onclick = () => $('file').click(); G.appendChild(add);
+  if (!libItems.length) G.appendChild(libMsg('Noch keine Songs. Sobald du ein Stück abspielst, erscheint es hier.'));
+  else if (!list.length) G.appendChild(libMsg('Kein Song gefunden.'));
+  list.forEach(s => G.appendChild(songCard(s)));
+}
+function songCard(s) {
+  const c = mkEl('div', 'sc'), pv = mkEl('div', 'pv');
+  if (s.thumb) { const im = new Image(); im.src = s.thumb; im.alt = ''; pv.appendChild(im); } else pv.innerHTML = NOTE_SVG;
+  const star = mkEl('button', 'star ico'); star.textContent = s.fav ? '★' : '☆'; star.classList.toggle('on', !!s.fav); star.setAttribute('aria-label', 'Favorit');
+  star.onclick = async e => { e.stopPropagation(); s.fav = !s.fav; renderLib(); try { await songsCol().doc(s.id).set({ fav: s.fav }, { merge: true }); } catch (err) { toast(songErr(err)); } };
+  const tag = mkEl('span', 'tag' + (s.here ? ' ok' : '')); tag.textContent = s.here ? 'Auf diesem Gerät' : 'Datei wählen';
+  pv.append(star, tag);
+  const sb = mkEl('div', 'sb'), nm = mkEl('b'), d1 = mkEl('small'), d2 = mkEl('small');
+  nm.textContent = s.name || 'Ohne Titel';
+  d1.textContent = fmtDay(s.lastPlayed && s.lastPlayed.toDate ? s.lastPlayed.toDate() : null) + ' gespielt';
+  d2.textContent = [(s.bpm || '–') + ' BPM', s.bars ? s.bars + ' Takte' : null, (s.plays || 1) + '× gespielt'].filter(Boolean).join(' · ');
+  sb.append(nm, d1, d2);
+  const sr = mkEl('div', 'sr'), op = mkEl('button', 'op'); op.textContent = s.here ? 'Öffnen' : 'Datei wählen';
+  op.onclick = e => { e.stopPropagation(); openSong(s.id, s.name, s.here); };
+  const rm = mkEl('button', 'ico rm'); rm.innerHTML = TRASH; rm.title = 'Zweimal tippen zum Löschen'; rm.setAttribute('aria-label', 'Löschen');
+  let armed = false;
+  rm.onclick = async e => {
+    e.stopPropagation();
+    if (!armed) { armed = true; rm.classList.add('arm'); setTimeout(() => { armed = false; rm.classList.remove('arm'); }, 2500); return; }
+    try { await songsCol().doc(s.id).delete(); idbDel(fbUser.uid + '_' + s.id).catch(() => {}); libItems = libItems.filter(x => x.id !== s.id); renderLib(); } catch (err) { toast(songErr(err)); }
+  };
+  sr.append(op, rm); c.append(pv, sb, sr); c.onclick = () => openSong(s.id, s.name, s.here);
+  return c;
+}
+$('libSearch').oninput = e => { libQuery = e.target.value.trim().toLowerCase(); renderLib(); };
+document.querySelectorAll('#libSort button').forEach(b => b.onclick = () => { libSort = b.dataset.s; document.querySelectorAll('#libSort button').forEach(x => x.classList.toggle('on', x === b)); renderLib(); });
+$('libBack').onclick = () => leaveLib();
+
+/* ===== Rechtliches: Datenschutz, Impressum, Nutzungsbedingungen, Zustimmung, Datenexport, Konto löschen ===== */
+var LEGAL_VERSION = '2026-11-22', justReg = false, consentUid;
+function showLegal(w) {
+  document.querySelectorAll('#legalTabs button').forEach(b => b.classList.toggle('on', b.dataset.l === w));
+  document.querySelectorAll('#legalBody article').forEach(a => { a.hidden = a.id !== 'L-' + w; });
+  $('legalBody').scrollTop = 0;
+}
+function openLegal(w) { showLegal(w || 'privacy'); $('legalbox').hidden = false; }
+function closeLegal() { $('legalbox').hidden = true; }
+document.addEventListener('click', e => { const a = e.target.closest('[data-legal]'); if (a) { e.preventDefault(); openLegal(a.dataset.legal); } });
+document.querySelectorAll('#legalTabs button').forEach(b => b.onclick = () => showLegal(b.dataset.l));
+$('legalx').onclick = closeLegal;
+$('legalbox').addEventListener('pointerdown', e => { if (e.target === $('legalbox')) closeLegal(); });
+addEventListener('keydown', e => { if (!$('legalbox').hidden) { if (e.key === 'Escape') closeLegal(); e.stopPropagation(); } }, true);
+async function saveConsent(uid) {
+  try { await firebase.firestore().collection('users').doc(uid).set({ consent: { version: LEGAL_VERSION, acceptedAt: firebase.firestore.FieldValue.serverTimestamp() } }, { merge: true }); } catch (e) {}
+  justReg = false;
+}
+async function consentAuth() {
+  const u = fbUser ? fbUser.uid : null;
+  if (u === consentUid) return;
+  consentUid = u;
+  if (!u || justReg || !window.firebase || !firebase.firestore) return;
+  try {
+    const snap = await Promise.race([firebase.firestore().collection('users').doc(u).get(), new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 6000))]);
+    const c = snap.exists ? snap.data().consent : null;
+    if (!c || c.version !== LEGAL_VERSION) { $('cnChk').checked = false; $('cnErr').textContent = ''; $('consentbox').hidden = false; }
+  } catch (e) {}
+}
+$('cnOk').onclick = async () => {
+  if (!$('cnChk').checked) { $('cnErr').textContent = 'Bitte setze zuerst den Haken.'; return; }
+  if (fbUser) await saveConsent(fbUser.uid);
+  $('consentbox').hidden = true; toast('Danke!');
+};
+$('cnOut').onclick = async () => { $('consentbox').hidden = true; try { await fbAuth.signOut(); } catch (e) {} };
+$('accExport').onclick = async () => {
+  const col = songsCol(); if (!col) return;
+  try {
+    const out = { exportiertAm: new Date().toISOString(), uid: fbUser.uid, email: fbUser.email, name: fbUser.displayName || null, songs: [] };
+    const snap = await col.get();
+    snap.forEach(d => { const x = d.data(); if (x.lastPlayed && x.lastPlayed.toDate) x.lastPlayed = x.lastPlayed.toDate().toISOString(); out.songs.push(Object.assign({ id: d.id }, x)); });
+    const ud = await firebase.firestore().collection('users').doc(fbUser.uid).get();
+    const c = ud.exists ? ud.data().consent : null;
+    if (c) out.zustimmung = { version: c.version, zeitpunkt: c.acceptedAt && c.acceptedAt.toDate ? c.acceptedAt.toDate().toISOString() : null };
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' }));
+    a.download = 'drum-reader-daten.json'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+  } catch (e) { toast(songErr(e)); }
+};
+let delArmed = false;
+$('accDelete').onclick = async () => {
+  const btn = $('accDelete');
+  if (!delArmed) { delArmed = true; btn.textContent = 'Wirklich löschen? Nochmal tippen'; setTimeout(() => { delArmed = false; btn.textContent = 'Konto und Daten löschen'; }, 4000); return; }
+  delArmed = false; btn.textContent = 'Konto und Daten löschen';
+  const u = fbUser; if (!u) return;
+  try {
+    const db = firebase.firestore(), snap = await songsCol().get(), batch = db.batch();
+    snap.forEach(d => batch.delete(d.ref)); batch.delete(db.collection('users').doc(u.uid)); await batch.commit();
+    for (const k of await idbKeys()) if (String(k).startsWith(u.uid + '_')) await idbDel(k).catch(() => {});
+    await u.delete(); closeAcc(); toast('Dein Konto und alle Daten wurden gelöscht.');
+  } catch (e) { toast(e && e.code === 'auth/requires-recent-login' ? 'Bitte melde dich zur Sicherheit erneut an und versuche das Löschen noch einmal.' : fbMsg(e)); }
+};
+/* ===== Anmeldung mit Google ===== */
+$('accGoogle').onclick = async () => {
+  if (!fbAuth) return;
+  const reg = accTab === 'reg';
+  if (reg && !$('accConsent').checked) return showErr('Bitte bestätige die Datenschutzerklärung und die Nutzungsbedingungen.');
+  showErr('');
+  const prov = new firebase.auth.GoogleAuthProvider(); prov.setCustomParameters({ prompt: 'select_account' });
+  const btn = $('accGoogle'); btn.disabled = true;
+  try {
+    if (reg) { justReg = true; setTimeout(() => { justReg = false; }, 15000); }
+    const r = await fbAuth.signInWithPopup(prov);
+    if (reg) await saveConsent(r.user.uid);
+    toast('Angemeldet.'); closeAcc();
+  } catch (err) {
+    justReg = false;
+    const c = err && err.code;
+    if (c === 'auth/popup-blocked' || c === 'auth/operation-not-supported-in-this-environment') {
+      try { await fbAuth.signInWithRedirect(prov); return; } catch (e2) { showErr(fbMsg(e2)); }
+    } else if (c !== 'auth/popup-closed-by-user' && c !== 'auth/cancelled-popup-request') showErr(fbMsg(err));
+  }
+  btn.disabled = false;
+};
+addEventListener('hashchange', () => showView(location.hash === '#songs' ? 'songs' : 'player'));
+showView(location.hash === '#songs' ? 'songs' : 'player');
+$('songsBtn').onclick = openSongs; $('songx').onclick = closeSongs;
+$('songbox').addEventListener('pointerdown', e => { if (e.target === $('songbox')) closeSongs(); });
+addEventListener('keydown', e => { if (!$('songbox').hidden) { if (e.key === 'Escape') closeSongs(); e.stopPropagation(); } }, true);
+</script>
+</body>
+</html>
